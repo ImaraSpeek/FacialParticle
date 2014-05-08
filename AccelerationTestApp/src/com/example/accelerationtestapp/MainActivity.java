@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener {
 	
@@ -26,6 +27,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private Sensor accelerometer;
 	private boolean measuring = false;
 	private ArrayList<String[]> measurements = null;
+	
+	private TextView tenthSec;
+	private TextView sec;
+	private TextView tenSec;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +58,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 				}
 			}
 		});
+		
+		tenthSec = (TextView) findViewById(R.id.textView2);
+		sec = (TextView) findViewById(R.id.textView3);
+		tenSec = (TextView) findViewById(R.id.textView4);
 	}
 	
 	@Override
@@ -71,12 +80,51 @@ public class MainActivity extends Activity implements SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER
 				&& measuring) {
-			String[] m = new String[4];
+			String[] m = new String[8];
 			m[0] = Long.toString(System.currentTimeMillis());
 			m[1] = Float.toString(event.values[0]);
 			m[2] = Float.toString(event.values[1]);
 			m[3] = Float.toString(event.values[2]);
+			
+			// Filtered values
+			int s = measurements.size();
+			float a = 0.5f;
+			if (s > 0) {
+				m[4] = Float.toString(event.values[0] - (Float.parseFloat(measurements.get(s-1)[1])*(1-a) + event.values[0]*a));
+				m[5] = Float.toString(event.values[1] - (Float.parseFloat(measurements.get(s-1)[2])*(1-a) + event.values[1]*a));
+				m[6] = Float.toString(event.values[2] - (Float.parseFloat(measurements.get(s-1)[3])*(1-a) + event.values[2]*a));
+				m[7] = Double.toString(Math.sqrt(Math.pow(Float.parseFloat(m[4]),2) + Math.pow(Float.parseFloat(m[5]),2) + Math.pow(Float.parseFloat(m[6]),2)));
+			} else {
+				m[4] = "0";
+				m[5] = "0";
+				m[6] = "0";
+				m[7] = "0";
+			}
 			measurements.add(m);
+			
+			int i;
+			double maxTenthSec = 0;
+			double maxSec = 0;
+			double maxTenSec = 0;
+			for (i = s-1; i>=0; i--) {
+				if (System.currentTimeMillis() - Long.parseLong(measurements.get(i)[0]) < 100) {
+					maxTenthSec = Math.max(maxTenthSec, Double.parseDouble(measurements.get(i)[7]));
+				}
+				if (System.currentTimeMillis() - Long.parseLong(measurements.get(i)[0]) < 1000) {
+					maxSec = Math.max(maxSec, Double.parseDouble(measurements.get(i)[7]));
+				}
+				if (System.currentTimeMillis() - Long.parseLong(measurements.get(i)[0]) < 5000) {
+					maxTenSec = Math.max(maxTenSec, Double.parseDouble(measurements.get(i)[7]));
+				}
+				if (System.currentTimeMillis() - Long.parseLong(measurements.get(i)[0]) >= 5000) {
+					break;
+				}
+			}
+			
+			tenthSec.setText("Largest acceleration in last 0.1 seconds: " + ((double)Math.round(maxTenthSec*100) / 100) + " m/s2");
+			sec.setText("Largest acceleration in last 1 second: " + ((double)Math.round(maxSec*100) / 100) + " m/s2");
+			tenSec.setText("Largest acceleration in last 5 seconds: " + ((double)Math.round(maxTenSec*100) / 100) + " m/s2");
+			//Log.i("MOVE", Double.parseDouble(measurements.get(i)[7]) + " m/s2");
 		}
 	}
 

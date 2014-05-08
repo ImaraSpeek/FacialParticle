@@ -8,7 +8,7 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New text"
+        android:text="Acceleration test"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
@@ -16,5 +16,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Largest acceleration in last 0.1 seconds: 0.00 m/s2" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Largest acceleration in last 1 second: 0.00 m/s2" />
+    
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Largest acceleration in last 5 seconds: 0.00 m/s2" />
 
 </LinearLayout>
