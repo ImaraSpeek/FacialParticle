@@ -23,12 +23,18 @@ import android.widget.ImageView;
 public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		private static final String TAG = "CameraActivity";
 		private Camera camera;
+		private Camera front;
+		
+		
 		
 		@Override
 		public void onCreate(Bundle savedInstanceState) 
 		{
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_main);
+			
+			//front = openFrontFacingCamera();
+			
 			SurfaceView surface = (SurfaceView)findViewById(R.id.stream);
 			SurfaceHolder holder = surface.getHolder();
 			holder.addCallback(this);
@@ -70,7 +76,28 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		protected void onResume() 
 		{
 			super.onResume();
-			camera = Camera.open();
+			//camera = Camera.open();
+			camera = openFrontFacingCamera();
+		}
+		
+		private Camera openFrontFacingCamera() 
+		{
+		    int cameraCount = 0;
+		    Camera cam = null;
+		    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+		    cameraCount = Camera.getNumberOfCameras();
+		    for ( int camIdx = 0; camIdx < cameraCount; camIdx++ ) {
+		        Camera.getCameraInfo( camIdx, cameraInfo );
+		        if ( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT  ) {
+		            try {
+		                cam = Camera.open( camIdx );
+		            } catch (RuntimeException e) {
+		                Log.e(TAG, "Camera failed to open: " + e.getLocalizedMessage());
+		            }
+		        }
+		    }
+
+		    return cam;
 		}
 
 
