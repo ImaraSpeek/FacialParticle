@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--   Copyright (c) 2014 Qualcomm Technologies, Inc. -->
+<!--   All Rights Reserved. -->
+<!--   Qualcomm Technologies Confidential and Proprietary. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+  <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/engagement" android:textSize="20dip"/>
+
+
+    <TextView
+        android:id="@+id/value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:layout_marginLeft="5dip"
+        android:text="TextView" android:textSize="20dip"/>
+    </LinearLayout>
+
+  
+
+</LinearLayout>

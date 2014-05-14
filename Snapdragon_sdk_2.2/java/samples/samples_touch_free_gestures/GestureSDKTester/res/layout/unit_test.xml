@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--   Copyright (c) 2014 Qualcomm Technologies, Inc. All Rights Reserved. -->
+<!--   Qualcomm Technologies Confidential and Proprietary. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/instruction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/test_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/cancel" android:visibility="invisible"/>
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="10dip"
+            android:text="@string/start_tests" android:visibility="invisible"/>
+    </LinearLayout>
+
+</LinearLayout>

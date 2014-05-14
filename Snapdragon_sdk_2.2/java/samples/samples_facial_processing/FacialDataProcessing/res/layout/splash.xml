@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/* ======================================================================
+*  Copyright (c) 2014 Qualcomm Technologies, Inc. All Rights Reserved.
+*  QTI Proprietary and Confidential.
+*  =====================================================================
+*
+* @file    splash.xml
+* @brief   Android application manifest file for DeviceInfo API.
+*/-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/snapdragon" >
+
+</RelativeLayout>
