@@ -13,6 +13,9 @@ public class UnlockActivity extends Activity {
 		
 		setContentView(R.layout.activity_unlock);
 		
+		// Unlock the device, this should be replaced with authorization
+		ApplicationState.getInstance(getApplicationContext()).setState(ApplicationState.LOCK_STATE_UNLOCKED);
+		
 	}
 
 }

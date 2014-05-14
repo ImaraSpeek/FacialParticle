@@ -1,5 +1,9 @@
 <resources>
 
     <string name="app_name">WatchDog</string>
+    <string name="lbl_state_unlocked">This phone is currently unlocked</string>
+    <string name="lbl_state_locking">Place the phone on a stable surface to start locking it</string>
+    <string name="lbl_state_calibrating">Calibrating the phone...</string>
+    <string name="lbl_state_locked">This phone is locked</string>
 
 </resources>
