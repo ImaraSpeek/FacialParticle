@@ -3,16 +3,26 @@ package com.watchdog;
 import com.watchdog.R;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
 	// Controls
 	private Button btnLock;
+	private TextView lblState;
+	
+	// Receivers
+	BroadcastReceiver stateChangedReceiver;
+	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -28,6 +38,48 @@ public class MainActivity extends Activity {
 				startService(lockIntent);
 			}
 		});
+		
+		lblState = (TextView) findViewById(R.id.lblState);
+		
+		stateChangedReceiver = new BroadcastReceiver() {
+	        @Override
+	        public void onReceive(Context context, Intent intent) {
+	            updateState();
+	        }
+	    };
+	}
+	
+	private void updateState() {
+		switch (ApplicationState.getInstance(getApplicationContext()).getState()) {
+		case ApplicationState.LOCK_STATE_UNLOCKED:
+			lblState.setText(getString(R.string.lbl_state_unlocked));
+			break;
+		case ApplicationState.LOCK_STATE_LOCKING:
+			lblState.setText(getString(R.string.lbl_state_locking));
+			break;
+		case ApplicationState.LOCK_STATE_CALIBRATING:
+			lblState.setText(getString(R.string.lbl_state_calibrating));
+			break;
+		case ApplicationState.LOCK_STATE_LOCKED:
+			lblState.setText(getString(R.string.lbl_state_locked));
+			break;
+
+		default:
+			break;
+		}
+	}
+	
+	@Override
+	protected void onStart() {
+	    super.onStart();
+	    LocalBroadcastManager.getInstance(this).registerReceiver(stateChangedReceiver, new IntentFilter(ApplicationState.BROADCAST_LOCK_STATE_CHANGED));
+	    updateState();
+	}
+
+	@Override
+	protected void onStop() {
+	    LocalBroadcastManager.getInstance(this).unregisterReceiver(stateChangedReceiver);
+	    super.onStop();
 	}
 
 }

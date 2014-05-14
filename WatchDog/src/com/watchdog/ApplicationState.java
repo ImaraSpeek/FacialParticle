@@ -1,14 +1,19 @@
 package com.watchdog;
 
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 
 public class ApplicationState {
 
 	private Context context;
 	private static ApplicationState instance;
 	
+	private LocalBroadcastManager broadcaster;
+	
 	private ApplicationState(Context c) {
 		context = c;
+		broadcaster = LocalBroadcastManager.getInstance(c);
 	}
 	
 	public static ApplicationState getInstance(Context c) {
@@ -31,6 +36,8 @@ public class ApplicationState {
 	// Locked mode, started when the phone is calibrated and is in lock mode
 	public static final int LOCK_STATE_LOCKED = 3;
 	
+	public static final String BROADCAST_LOCK_STATE_CHANGED = "com.watchdog.broadcast.LOCK_STATE_CHANGED";
+	
 	private int state = LOCK_STATE_UNLOCKED;
 	
 	public int getState() {
@@ -39,6 +46,8 @@ public class ApplicationState {
 	
 	public void setState(int s) {
 		state = s;
+		Intent stateChangedIntent = new Intent(BROADCAST_LOCK_STATE_CHANGED);
+	    broadcaster.sendBroadcast(stateChangedIntent);
 	}
 	
 }
