@@ -121,7 +121,7 @@ public class LockedService extends Service implements SensorEventListener {
 				else {
 					// Calibration phase ended, set threshold
 					threshold = maxAccValue*calibrationFactor;
-					Log.i(TAG, "Going into LOCKED state with threshold " + threshold);
+					Log.i(TAG, "Going into LOCKED state with threshold " + threshold + " from maxAccValue " + maxAccValue);
 					appState.setState(ApplicationState.LOCK_STATE_LOCKED);
 				}
 			}
