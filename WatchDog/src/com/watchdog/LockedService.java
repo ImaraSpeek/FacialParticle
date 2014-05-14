@@ -1,7 +1,5 @@
 package com.watchdog;
 
-import android.app.KeyguardManager;
-import android.app.KeyguardManager.KeyguardLock;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -75,7 +73,7 @@ public class LockedService extends Service implements SensorEventListener {
 					Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
 					unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					getApplication().startActivity(unlockIntent);
-					// Realease listener, wakelock and stop service
+					// Release listener, wakelock and stop service
 					sensorManager.unregisterListener(this);
 					wakeLock.release();
 					stopSelf();
