@@ -45,7 +45,9 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 			SurfaceHolder holder = surface.getHolder();
 			holder.addCallback(this);
 			holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-			holder.setFixedSize(400, 300);
+			
+			// Can set the size of the camera view here
+			//holder.setFixedSize(400, 300);
 		}
 		
 		public void surfaceCreated(SurfaceHolder holder) 
