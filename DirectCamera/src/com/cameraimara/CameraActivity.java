@@ -4,26 +4,32 @@ import java.io.File;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.hardware.Camera.Parameters;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
 public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		private static final String TAG = "CameraActivity";
 		private Camera camera;
-		private Camera front;
+		//private Camera front;
+		//private boolean isPreviewRunning = false;
 		
 		
 		
@@ -44,15 +50,18 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		
 		public void surfaceCreated(SurfaceHolder holder) 
 		{
+			
 			try {
 				camera.setPreviewDisplay(holder);
 				camera.startPreview();
+				//isPreviewRunning = true;
 				// TODO Draw over the preview if required.
 			} 
 			catch (IOException e) 
 			{
 				Log.d(TAG, "IO Exception", e);
 			}
+			
 		}
 		
 		public void surfaceDestroyed(SurfaceHolder holder) 
@@ -62,8 +71,58 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		
 		public void surfaceChanged(SurfaceHolder holder, int format,int width, int height) 
 		{
-			
+			/*
+			if (isPreviewRunning)
+	        {
+	            camera.stopPreview();
+	        }
+
+	        Parameters parameters = camera.getParameters();
+	        //Display display = ((WindowManager)getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+	        Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+	        if(display.getRotation() == Surface.ROTATION_0)
+	        {
+	            parameters.setPreviewSize(height, width);                           
+	            camera.setDisplayOrientation(90);
+	        }
+
+	        if(display.getRotation() == Surface.ROTATION_90)
+	        {
+	            parameters.setPreviewSize(width, height);                           
+	        }
+
+	        if(display.getRotation() == Surface.ROTATION_180)
+	        {
+	            parameters.setPreviewSize(height, width);               
+	        }
+
+	        if(display.getRotation() == Surface.ROTATION_270)
+	        {
+	            parameters.setPreviewSize(width, height);
+	            camera.setDisplayOrientation(180);
+	        }
+
+	        camera.setParameters(parameters);
+	        previewCamera(holder);      
+			*/
 		}
+		
+		/*
+		public void previewCamera(SurfaceHolder holder)
+		{        
+		    try 
+		    {           
+		        camera.setPreviewDisplay(holder);          
+		        camera.startPreview();
+		        isPreviewRunning = true;
+		    }
+		    catch(Exception e)
+		    {
+		        Log.d(TAG, "Cannot start preview", e);    
+		    }
+		}
+		*/
 		
 		@Override
 		protected void onPause() 
