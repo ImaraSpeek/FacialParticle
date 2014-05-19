@@ -1,6 +1,8 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+include $(OPENCV_PACKAGE_DIR)/share/OpenCV/OpenCV.mk
+
 
 OPENCV_LIB_TYPE:=STATIC
 OPENCV_INSTALL_MODULES:=on
