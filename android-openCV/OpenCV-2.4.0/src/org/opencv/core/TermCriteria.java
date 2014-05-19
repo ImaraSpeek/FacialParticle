@@ -89,7 +89,8 @@ public class TermCriteria {
         return type == it.type && maxCount == it.maxCount && epsilon == it.epsilon;
     }
 
-    @Override
+    @SuppressWarnings("unused")
+	@Override
     public String toString() {
         if (this == null) return "null";
         return "{ type: " + type + ", maxCount: " + maxCount + ", epsilon: " + epsilon + "}";
