@@ -29,7 +29,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		private static final String TAG = "CameraActivity";
 		private Camera camera;
 		//private Camera front;
-		//private boolean isPreviewRunning = false;
+		private boolean isPreviewRunning = false;
 		
 		
 		
@@ -71,7 +71,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		
 		public void surfaceChanged(SurfaceHolder holder, int format,int width, int height) 
 		{
-			/*
+			
 			if (isPreviewRunning)
 	        {
 	            camera.stopPreview();
@@ -105,10 +105,10 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
 	        camera.setParameters(parameters);
 	        previewCamera(holder);      
-			*/
+			
 		}
 		
-		/*
+		
 		public void previewCamera(SurfaceHolder holder)
 		{        
 		    try 
@@ -122,7 +122,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 		        Log.d(TAG, "Cannot start preview", e);    
 		    }
 		}
-		*/
+		
 		
 		@Override
 		protected void onPause() 
