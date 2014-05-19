@@ -9,6 +9,7 @@ import org.opencv.core.Mat;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.android.JavaCameraView;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+@SuppressWarnings("unused")
 public class Tutorial2Activity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG = "OCVSample::Activity";
 
