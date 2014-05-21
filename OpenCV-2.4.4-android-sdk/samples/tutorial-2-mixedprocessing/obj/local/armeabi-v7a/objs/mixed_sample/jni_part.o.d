@@ -48,7 +48,11 @@ obj/local/armeabi-v7a/objs/mixed_sample/jni_part.o: jni/jni_part.cpp \
  ../../sdk/native/jni/include/opencv2/features2d/features2d.hpp \
  ../../sdk/native/jni/include/opencv2/flann/miniflann.hpp \
  ../../sdk/native/jni/include/opencv2/flann/defines.h \
- ../../sdk/native/jni/include/opencv2/flann/config.h
+ ../../sdk/native/jni/include/opencv2/flann/config.h jni/objdetect.hpp \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque \
+ jni/highgui.hpp ../../sdk/native/jni/include/opencv2/highgui/highgui_c.h \
+ jni/imgproc.hpp jni/core.hpp jni/imgproc_c.h \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/iostream
 
 /home/imara/Programs/android-ndk-r9d/platforms/android-8/arch-arm/usr/include/jni.h:
 
@@ -149,3 +153,19 @@ obj/local/armeabi-v7a/objs/mixed_sample/jni_part.o: jni/jni_part.cpp \
 ../../sdk/native/jni/include/opencv2/flann/defines.h:
 
 ../../sdk/native/jni/include/opencv2/flann/config.h:
+
+jni/objdetect.hpp:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque:
+
+jni/highgui.hpp:
+
+../../sdk/native/jni/include/opencv2/highgui/highgui_c.h:
+
+jni/imgproc.hpp:
+
+jni/core.hpp:
+
+jni/imgproc_c.h:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/iostream:

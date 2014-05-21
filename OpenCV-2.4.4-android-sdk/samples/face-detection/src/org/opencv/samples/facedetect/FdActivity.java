@@ -31,6 +31,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
+    private static final Scalar    EYES_RECT_COLOR     = new Scalar(255, 0, 255, 0);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -43,10 +44,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat                    mRgba;
     private Mat                    mGray;
     private File                   mCascadeFile;
+    
+    private File				   mCascadeFileeye;
+    
     private CascadeClassifier      mJavaDetector;
     private DetectionBasedTracker  mNativeDetector;
+    private DetectionBasedTracker  mNativeDetectoreye;
 
-    private int                    mDetectorType       = JAVA_DETECTOR;
+    private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
 
     private float                  mRelativeFaceSize   = 0.2f;
@@ -67,9 +72,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -80,16 +85,42 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         is.close();
                         os.close();
 
+                        /*
                         mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
                         if (mJavaDetector.empty()) {
                             Log.e(TAG, "Failed to load cascade classifier");
                             mJavaDetector = null;
                         } else
                             Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
+                        */
 
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
                         cascadeDir.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+                    
+                    try {
+                        // load cascade file from application resources
+                        InputStream iseye = getResources().openRawResource(R.raw.haarcascade_eye);
+                        File cascadeDireye = getDir("cascade", Context.MODE_PRIVATE);
+                        mCascadeFileeye = new File(cascadeDireye, "haarcascade_eye.xml");
+                        FileOutputStream oseye = new FileOutputStream(mCascadeFileeye);
+
+                        byte[] buffereye = new byte[4096];
+                        int bytesReadeye;
+                        while ((bytesReadeye = iseye.read(buffereye)) != -1) {
+                            oseye.write(buffereye, 0, bytesReadeye);
+                        }
+                        iseye.close();
+                        oseye.close();
+
+                        mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
+
+                        cascadeDireye.delete();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -171,13 +202,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         }
 
         MatOfRect faces = new MatOfRect();
+        MatOfRect eyes = new MatOfRect();
 
-        if (mDetectorType == JAVA_DETECTOR) {
-            if (mJavaDetector != null)
-                mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        }
-        else if (mDetectorType == NATIVE_DETECTOR) {
+        if (mDetectorType == NATIVE_DETECTOR) {
             if (mNativeDetector != null)
                 mNativeDetector.detect(mGray, faces);
         }
@@ -187,8 +214,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
+        {
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-
+            mNativeDetectoreye.detect(mGray, eyes);
+            Rect[] eyesArray = eyes.toArray();
+            for (int j = 0; j < eyesArray.length; j++)
+            {
+            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+            }
+        }
         return mRgba;
     }
 
@@ -199,7 +233,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
-        mItemType   = menu.add(mDetectorName[mDetectorType]);
         return true;
     }
 
@@ -214,11 +247,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             setMinFaceSize(0.3f);
         else if (item == mItemFace20)
             setMinFaceSize(0.2f);
-        else if (item == mItemType) {
-            mDetectorType = (mDetectorType + 1) % mDetectorName.length;
-            item.setTitle(mDetectorName[mDetectorType]);
-            setDetectorType(mDetectorType);
-        }
         return true;
     }
 
@@ -227,17 +255,4 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mAbsoluteFaceSize = 0;
     }
 
-    private void setDetectorType(int type) {
-        if (mDetectorType != type) {
-            mDetectorType = type;
-
-            if (type == NATIVE_DETECTOR) {
-                Log.i(TAG, "Detection Based Tracker enabled");
-                mNativeDetector.start();
-            } else {
-                Log.i(TAG, "Cascade detector enabled");
-                mNativeDetector.stop();
-            }
-        }
-    }
 }
