@@ -64,6 +64,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     // for tracking the face
     CamShifting cs;
+    
+    private boolean				   facedetected = false;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -203,22 +205,51 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         MatOfRect faces = new MatOfRect();
         MatOfRect eyes = new MatOfRect();
+        Rect[] facesArray = null;
+        RotatedRect trackface = null;
 
-        if (mDetectorType == NATIVE_DETECTOR) {
-            if (mNativeDetector != null)
+        // If no face has been detected yet, detect the face
+        // TODO add a way to falsify more than 1 face
+        if (mNativeDetector != null && !facedetected){
                 mNativeDetector.detect(mGray, faces);
+                // check if there is a face detected and assign them to the array
+                if (!faces.empty())
+                {
+                	facesArray = faces.toArray();  
+                	facedetected = true;
+                	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+                    // When face is detected, start tracking it using camshifting
+                    cs.create_tracked_object(mRgba,facesArray,cs);
+                }
         }
-        else {
-            Log.e(TAG, "Detection method is not selected!");
+ 
+        // TODO check if we need to only capture a single face
+        
+        // if a face has already been detected, we should track that face until it is lost
+        if (facedetected)
+        {
+            //track the face in the new frame
+            trackface = cs.camshift_track_face(mRgba, facesArray, cs);
+             
+            //outline face ellipse
+            //cvEllipseBox(image, face_box, CV_RGB(255,0,0), 3, CV_AA, 0);
+            Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), FACE_RECT_COLOR, 3);
+            //Core.ellipse(mRgba, trackface.center, trackface., trackface.angle, mRelativeFaceSize, mRelativeFaceSize, mRelativeFaceSize, FACE_RECT_COLOR, 3);
+            
+            // TODO check when face is not detected anymore
         }
-
-        Rect[] facesArray = faces.toArray();
+        
+        
+        
+        
+        /*
         for (int i = 0; i < facesArray.length; i++)
         {
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
             
             // When face is detected, start tracking it using camshifting
             cs.create_tracked_object(mRgba,facesArray,cs);
+            facedetected = true;
             
             mNativeDetectoreye.detect(mGray, eyes);
             Rect[] eyesArray = eyes.toArray();
@@ -226,7 +257,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             {
             	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
             }
+            
         }
+        */
+        
+        
         
         // TODO make sure that detecting the face only happens once, then track hue
         //track the face in the new frame

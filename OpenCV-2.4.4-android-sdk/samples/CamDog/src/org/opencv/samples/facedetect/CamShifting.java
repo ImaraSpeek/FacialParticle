@@ -100,12 +100,12 @@ public class CamShifting
 		  int vmin =65, vmax = 256, smin = 55;
 		  bgr=new Mat(mRgba.size(),CvType.CV_8UC3);
 		  Imgproc.cvtColor(mRgba,bgr,Imgproc.COLOR_RGBA2BGR);
-		  //imran converting RGBA to BGR 
-		//convert to HSV color model
+		  //converting RGBA to BGR 
+		  //convert to HSV color model
 		  Imgproc.cvtColor(bgr,cs.obj.hsv,Imgproc.COLOR_BGR2HSV);
 		  
 		//mask out-of-range values
-		  Core.inRange(cs.obj.hsv, new Scalar(0, smin,Math.min(vmin,vmax)),new Scalar(180, 256,Math.max(vmin, vmax)), cs.obj.mask);
+		  Core. inRange(cs.obj.hsv, new Scalar(0, smin,Math.min(vmin,vmax)),new Scalar(180, 256,Math.max(vmin, vmax)), cs.obj.mask);
 		  
 		  cs.obj.hsvarray.clear();
 		  cs.obj.huearray.clear();
@@ -116,7 +116,8 @@ public class CamShifting
 		  Core.mixChannels(cs.obj.hsvarray,cs.obj.huearray,from_to);
 	}
 	
-	RotatedRect camshift_track_face(Mat mRgba,Rect[] region,CamShifting cs)
+	
+	RotatedRect camshift_track_face(Mat mRgba, Rect[] region, CamShifting cs)
 	{
 		
 		MatOfFloat ranges = new MatOfFloat(0f, 256f);
@@ -132,6 +133,31 @@ public class CamShifting
 		cs.obj.curr_box.angle=-cs.obj.curr_box.angle;
 		return cs.obj.curr_box;
 	}
+	
+	
+	/*
+	CvBox2D camshift_track_face (IplImage* image, TrackedObj* obj) {
+		CvConnectedComp components;
+		 
+		//create a new hue image
+		update_hue_image(image, obj);
+		 
+		//create a probability image based on the face histogram
+		cvCalcBackProject(&obj->hue, obj->prob, obj->hist);
+		cvAnd(obj->prob, obj->mask, obj->prob, 0);
+		 
+		//use CamShift to find the center of the new face probability
+		cvCamShift(obj->prob, obj->prev_rect,
+		cvTermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 10, 1),
+		&components, &obj->curr_box);
+		 
+		//update face location and angle
+		obj->prev_rect = components.rect;
+		obj->curr_box.angle = -obj->curr_box.angle;
+		 
+		return obj->curr_box;
+		}
+		*/
 	
 	
 	
