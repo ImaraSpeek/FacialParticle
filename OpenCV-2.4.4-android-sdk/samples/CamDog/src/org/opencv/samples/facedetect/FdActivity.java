@@ -23,6 +23,7 @@ import org.opencv.objdetect.CascadeClassifier;
 
 
 
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -30,16 +31,19 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.view.animation.BounceInterpolator;
 
 @SuppressWarnings("unused")
 public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
+    private static final String	   TagD				   = "OCVSample::Debugging";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     private static final Scalar    HUE_RECT_COLOR      = new Scalar(0, 100, 0, 255);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(255, 0, 255, 0);
     private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(0, 0, 255, 0);
     private static final Scalar    NOSE_RECT_COLOR    = new Scalar(255, 0, 0, 0);
+    private static final Scalar    DEBUG_RECT_COLOR    = new Scalar(255, 255, 255, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -50,6 +54,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private Mat                    mRgba;
     private Mat                    mGray;
+    private Mat					   mFace;
     
     private File                   mCascadeFile;
     private File				   mCascadeFileeye;
@@ -77,6 +82,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private boolean				   facelost = false;
     private boolean				   eyesdetected = false;
     private boolean				   eyeslost = false;
+    
+    private long				   starttime = 0;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -274,19 +281,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         Rect[] nosesArray = null;
         RotatedRect trackeyes = null;
         RotatedRect trackface = null;
+        Mat faceImg = null;
+        int facetoprow, facebottomrow, faceleftcolumn, facerightcolumn;
+        
+        Rect trackhue = null;
 
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
         if (mNativeDetector != null && !facedetected){
-        		if (facelost)
-        		{
+        		//if (facelost)
         			// TODO check the previous region, track
         			mNativeDetector.detect(mGray, faces);
-        		}
-        		else
-        		{
-        			mNativeDetector.detect(mGray, faces);
-        		}
                 // check if there is a face detected and assign them to the array
                 if (!faces.empty())
                 {
@@ -294,6 +299,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	facedetected = true;
                 	facelost = false;
                 	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+                	
                     // When face is detected, start tracking it using camshifting
                     cs.create_tracked_object(mRgba,facesArray,cs);
                 }
@@ -304,11 +310,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // if a face has already been detected, we should track that face until it is lost
         if (facedetected)
         {
-            //track the face in the new frame
+            // track the face in the new frame
             trackface = cs.camshift_track_face(mRgba, facesArray, cs);
             
+            // Convert the rotated rectangle from camshifting to a regular rectangle 
+            trackhue = trackface.boundingRect();
+            
             // check whether the face is still a valid detection, else check again
-            if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
+            if (trackhue.area() < 100 || trackhue.width > 350 || trackhue.height > 800)
+            //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
             {
             	facedetected = false;
             	facelost = true;
@@ -316,15 +326,22 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             else
             {	            
 	            //outline face with rectangle
-	            Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);
-	             
-	        	mNativeDetectoreye.detect(mGray, eyes);
-	        	eyesArray = eyes.toArray();
+	            //Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);
+	            Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
+	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR);
+	            
+	            // create a new region to look for the eyes
+	            //faceImg = mGray.submat(trackhue);
+	            
+	            mNativeDetectoreye.detect(mGray.submat(trackhue), eyes);
+	            //mNativeDetectoreye.detect(mGray, eyes);
+	            eyesArray = eyes.toArray();
 	            for (int j = 0; j < eyesArray.length; j++)
 	            {
 	            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
 	            }
 	            
+	            /*
 	        	mNativeDetectormouth.detect(mGray, mouths);
 	        	mouthsArray = mouths.toArray();
 	            for (int j = 0; j < mouthsArray.length; j++)
@@ -338,6 +355,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
+	            */
 	            
 	            //System.out.println(trackface.size.area());
 	            //System.out.println(trackface.size.width);

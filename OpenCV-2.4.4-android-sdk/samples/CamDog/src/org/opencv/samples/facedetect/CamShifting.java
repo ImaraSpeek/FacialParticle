@@ -116,6 +116,24 @@ public class CamShifting
 		  Core.mixChannels(cs.obj.hsvarray,cs.obj.huearray,from_to);
 	}
 	
+	/*
+	RotatedRect camshift_track_face(Mat mRgba, Rect[] region, CamShifting cs)
+	{
+		
+		MatOfFloat ranges = new MatOfFloat(0f, 256f);
+		//ConnectedComp components;
+		update_hue_image(mRgba,region,cs);
+		Imgproc.calcBackProject(cs.obj.huearray, new MatOfInt(0),cs.obj.hist,cs.obj.prob, ranges,255);
+		Core.bitwise_and(cs.obj.prob,cs.obj.mask,cs.obj.prob,new Mat());
+		
+		cs.obj.curr_box=Video.CamShift(cs.obj.prob, cs.obj.prev_rect, new TermCriteria(TermCriteria.EPS,10,1));	
+		Log.i("Tracked Rectangle","Tracked Rectangle"+cs.obj.prev_rect);
+		Log.i("Tracked Rectangle","New Rectangle"+cs.obj.curr_box.boundingRect());
+		cs.obj.prev_rect=cs.obj.curr_box.boundingRect();
+		cs.obj.curr_box.angle=-cs.obj.curr_box.angle;
+		return cs.obj.curr_box;
+	}
+	*/
 	
 	RotatedRect camshift_track_face(Mat mRgba, Rect[] region, CamShifting cs)
 	{
