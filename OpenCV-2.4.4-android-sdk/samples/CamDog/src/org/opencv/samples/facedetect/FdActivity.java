@@ -38,6 +38,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     private static final Scalar    HUE_RECT_COLOR      = new Scalar(0, 100, 0, 255);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(255, 0, 255, 0);
+    private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(0, 0, 255, 0);
+    private static final Scalar    NOSE_RECT_COLOR    = new Scalar(255, 0, 0, 0);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -48,12 +50,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private File                   mCascadeFile;
     
+    private File                   mCascadeFile;
     private File				   mCascadeFileeye;
+    private File				   mCascadeFilemouth;
+    private File				   mCascadeFilenose;
     
     private DetectionBasedTracker  mNativeDetector;
     private DetectionBasedTracker  mNativeDetectoreye;
+    private DetectionBasedTracker  mNativeDetectormouth;
+    private DetectionBasedTracker  mNativeDetectornose;
 
     private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
@@ -136,6 +142,53 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         e.printStackTrace();
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
+                    
+                    try {
+                        // load cascade file from application resources
+                        InputStream ismouth = getResources().openRawResource(R.raw.haarcascade_mcs_mouth);
+                        File cascadeDirmouth = getDir("cascade", Context.MODE_PRIVATE);
+                        mCascadeFilemouth = new File(cascadeDirmouth, "haarcascade_mcs_mouth.xml");
+                        FileOutputStream osmouth = new FileOutputStream(mCascadeFilemouth);
+
+                        byte[] buffermouth = new byte[4096];
+                        int bytesReadmouth;
+                        while ((bytesReadmouth = ismouth.read(buffermouth)) != -1) {
+                            osmouth.write(buffermouth, 0, bytesReadmouth);
+                        }
+                        ismouth.close();
+                        osmouth.close();
+
+                        mNativeDetectormouth = new DetectionBasedTracker(mCascadeFilemouth.getAbsolutePath(), 0);
+
+                        cascadeDirmouth.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+                    try {
+                        // load cascade file from application resources
+                        InputStream isnose = getResources().openRawResource(R.raw.haarcascade_mcs_nose);
+                        File cascadeDirnose = getDir("cascade", Context.MODE_PRIVATE);
+                        mCascadeFilenose = new File(cascadeDirnose, "haarcascade_mcs_nose.xml");
+                        FileOutputStream osnose = new FileOutputStream(mCascadeFilenose);
+
+                        byte[] buffernose = new byte[4096];
+                        int bytesReadnose;
+                        while ((bytesReadnose = isnose.read(buffernose)) != -1) {
+                            osnose.write(buffernose, 0, bytesReadnose);
+                        }
+                        isnose.close();
+                        osnose.close();
+
+                        mNativeDetectornose = new DetectionBasedTracker(mCascadeFilenose.getAbsolutePath(), 0);
+
+                        cascadeDirnose.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
 
                     mOpenCvCameraView.enableView();
                 } break;
@@ -213,8 +266,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         MatOfRect faces = new MatOfRect();
         MatOfRect eyes = new MatOfRect();
+        MatOfRect mouths = new MatOfRect();
+        MatOfRect noses = new MatOfRect();
         Rect[] facesArray = null;
         Rect[] eyesArray = null;
+        Rect[] mouthsArray = null;
+        Rect[] nosesArray = null;
         RotatedRect trackeyes = null;
         RotatedRect trackface = null;
 
@@ -261,8 +318,30 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            //outline face with rectangle
 	            Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);
 	             
+	        	mNativeDetectoreye.detect(mGray, eyes);
+	        	eyesArray = eyes.toArray();
+	            for (int j = 0; j < eyesArray.length; j++)
+	            {
+	            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+	            }
+	            
+	        	mNativeDetectormouth.detect(mGray, mouths);
+	        	mouthsArray = mouths.toArray();
+	            for (int j = 0; j < mouthsArray.length; j++)
+	            {
+	            	Core.rectangle(mRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
+	            }
+	            
+	        	mNativeDetectornose.detect(mGray, noses);
+	        	nosesArray = noses.toArray();
+	            for (int j = 0; j < nosesArray.length; j++)
+	            {
+	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
+	            }
+	            
 	            //System.out.println(trackface.size.area());
 	            //System.out.println(trackface.size.width);
+	            /*
 	            if (mNativeDetectoreye != null && !eyesdetected)
 	            {
 	            	if (eyeslost)
@@ -294,7 +373,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		            {
 		            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
 		            }
-		        	/*
+		        	
 		            //track the face in the new frame
 		            trackeyes = cseyes.camshift_track_face(mRgba, eyesArray, cseyes);
 		            
@@ -304,8 +383,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		            	eyesdetected = false;
 		            	eyeslost = true;
 		            }
-		            */
+		            
 		        }
+		        */
             }
         }
         return mRgba;
