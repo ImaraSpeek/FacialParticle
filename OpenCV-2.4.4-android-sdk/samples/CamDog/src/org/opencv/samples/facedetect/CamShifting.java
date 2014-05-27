@@ -104,7 +104,7 @@ public class CamShifting
 		  //convert to HSV color model
 		  Imgproc.cvtColor(bgr,cs.obj.hsv,Imgproc.COLOR_BGR2HSV);
 		  
-		//mask out-of-range values
+		  //mask out-of-range values
 		  Core. inRange(cs.obj.hsv, new Scalar(0, smin,Math.min(vmin,vmax)),new Scalar(180, 256,Math.max(vmin, vmax)), cs.obj.mask);
 		  
 		  cs.obj.hsvarray.clear();

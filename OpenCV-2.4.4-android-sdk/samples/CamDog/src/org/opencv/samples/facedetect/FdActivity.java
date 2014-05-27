@@ -36,6 +36,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
+    private static final Scalar    HUE_RECT_COLOR      = new Scalar(0, 100, 0, 255);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(255, 0, 255, 0);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
@@ -64,8 +65,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     // for tracking the face
     CamShifting cs;
+    CamShifting cseyes;
     
     private boolean				   facedetected = false;
+    private boolean				   facelost = false;
+    private boolean				   eyesdetected = false;
+    private boolean				   eyeslost = false;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -82,10 +87,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     	// initialize new camshift
                     	cs = new CamShifting();                    	
                     	
-                        // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                        // load cascade file from application resources - lpbcascade is faster than haarcascade but 
+                    	// not as robust
+                        //InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
+                    	InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "haarcascade_frontalface.xml");
+                        //mCascadeFile = new File(cascadeDir, "haarcascade_frontalface.xml");
+                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -206,17 +214,28 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         MatOfRect faces = new MatOfRect();
         MatOfRect eyes = new MatOfRect();
         Rect[] facesArray = null;
+        Rect[] eyesArray = null;
+        RotatedRect trackeyes = null;
         RotatedRect trackface = null;
 
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
         if (mNativeDetector != null && !facedetected){
-                mNativeDetector.detect(mGray, faces);
+        		if (facelost)
+        		{
+        			// TODO check the previous region, track
+        			mNativeDetector.detect(mGray, faces);
+        		}
+        		else
+        		{
+        			mNativeDetector.detect(mGray, faces);
+        		}
                 // check if there is a face detected and assign them to the array
                 if (!faces.empty())
                 {
                 	facesArray = faces.toArray();  
                 	facedetected = true;
+                	facelost = false;
                 	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
                     // When face is detected, start tracking it using camshifting
                     cs.create_tracked_object(mRgba,facesArray,cs);
@@ -230,45 +249,65 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         {
             //track the face in the new frame
             trackface = cs.camshift_track_face(mRgba, facesArray, cs);
-             
-            //outline face ellipse
-            //cvEllipseBox(image, face_box, CV_RGB(255,0,0), 3, CV_AA, 0);
-            Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), FACE_RECT_COLOR, 3);
-            //Core.ellipse(mRgba, trackface.center, trackface., trackface.angle, mRelativeFaceSize, mRelativeFaceSize, mRelativeFaceSize, FACE_RECT_COLOR, 3);
             
-            // TODO check when face is not detected anymore
-        }
-        
-        
-        
-        
-        /*
-        for (int i = 0; i < facesArray.length; i++)
-        {
-            Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-            
-            // When face is detected, start tracking it using camshifting
-            cs.create_tracked_object(mRgba,facesArray,cs);
-            facedetected = true;
-            
-            mNativeDetectoreye.detect(mGray, eyes);
-            Rect[] eyesArray = eyes.toArray();
-            for (int j = 0; j < eyesArray.length; j++)
+            // check whether the face is still a valid detection, else check again
+            if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
             {
-            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+            	facedetected = false;
+            	facelost = true;
             }
-            
+            else
+            {	            
+	            //outline face with rectangle
+	            Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);
+	             
+	            //System.out.println(trackface.size.area());
+	            //System.out.println(trackface.size.width);
+	            if (mNativeDetectoreye != null && !eyesdetected)
+	            {
+	            	if (eyeslost)
+	            	{
+	            		// TODO check the previous region, track
+	            		mNativeDetectoreye.detect(mGray, eyes);
+	            	}
+	            	else
+	            	{
+	            		mNativeDetectoreye.detect(mGray, eyes);
+	            	}
+	                   // check if there is a face detected and assign them to the array
+	                if (!eyes.empty())
+	                {
+	                   	eyesArray = eyes.toArray();  
+	                   	eyesdetected = true;
+	                   	eyeslost = false;
+	                   	Core.rectangle(mRgba, eyesArray[0].tl(), eyesArray[0].br(), EYES_RECT_COLOR, 3);
+	                    // When face is detected, start tracking it using camshifting
+	                    //cseyes.create_tracked_object(mRgba,eyesArray,cseyes);
+	                }
+	            }
+	                
+		        if (eyesdetected)
+		        {
+		        	mNativeDetectoreye.detect(mGray, eyes);
+		        	eyesArray = eyes.toArray();
+		            for (int j = 0; j < eyesArray.length; j++)
+		            {
+		            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+		            }
+		        	/*
+		            //track the face in the new frame
+		            trackeyes = cseyes.camshift_track_face(mRgba, eyesArray, cseyes);
+		            
+		            // check whether the face is still a valid detection, else check again
+		            if (trackeyes.size.area() < 100)
+		            {
+		            	eyesdetected = false;
+		            	eyeslost = true;
+		            }
+		            */
+		        }
+            }
         }
-        */
-        
-        
-        
-        // TODO make sure that detecting the face only happens once, then track hue
-        //track the face in the new frame
-    	//RotatedRect face_box = cs.camshift_track_face(mRgba,facearray1,cs);
-    	//Core.ellipse(mRgba,face_box,FACE_RECT_COLOR, 6);
-        
-        
         return mRgba;
     }
 
