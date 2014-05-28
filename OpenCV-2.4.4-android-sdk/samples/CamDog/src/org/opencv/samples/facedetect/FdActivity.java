@@ -65,7 +65,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private DetectionBasedTracker  mNativeDetectoreye;
     private DetectionBasedTracker  mNativeDetectormouth;
     private DetectionBasedTracker  mNativeDetectornose;
-
+    private CascadeClassifier      mEyeDetector;
+    
+    
     private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
 
@@ -126,6 +128,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
                     
+                    
                     try {
                         // load cascade file from application resources
                         InputStream iseye = getResources().openRawResource(R.raw.haarcascade_eye);
@@ -140,6 +143,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         iseye.close();
                         oseye.close();
+                        
+                        // This part is for the java cascade classifier to search within region
+                        mEyeDetector = new CascadeClassifier(mCascadeFileeye.getAbsolutePath());
+                        if (mEyeDetector.empty()) {
+                            Log.e(TAG, "Failed to load eye cascade classifier");
+                            mEyeDetector = null;
+                        } else
+                        {
+                            Log.i(TAG, "Loaded eye cascade classifier from " + mCascadeFileeye.getAbsolutePath());
+                        }
 
                         mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
 
@@ -315,16 +328,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         if (facedetected)
         {
             // track the face in the new frame
-            trackface = cs.camshift_track_face(mRgba, facesArray, cs);
-        	//mNativeDetector.track(faces);
-            
-            // Convert the rotated rectangle from camshifting to a regular rectangle 
+            trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
+            // Convert the rotated rectangle from cam shifting to a regular rectangle 
             trackhue = trackface.boundingRect();
             
             Log.i(TAG, "trackhue size is:"+trackhue.area());
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.area() < 100)
+            if (trackhue.area() < 100 )
             //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
             {
             	facedetected = false;
@@ -337,26 +348,34 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
 	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
-            	
-            	//facesArray = faces.toArray();  
-            	//Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+	            
+	            // compute the eye area
+	            Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - 2*trackhue.width/8,(int)( trackhue.height/3.0));
+	            // split it
+	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - 2*trackhue.width/16)/2,(int)( trackhue.height/3.0));
+	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 +(trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - 2*trackhue.width/16)/2,(int)( trackhue.height/3.0));
+	            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
+	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , MOUTH_RECT_COLOR, 2);
+	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), MOUTH_RECT_COLOR, 2);
+	            //Core.rectangle(mRgba, eyearea.tl(),eyearea.br() , new Scalar(255, 0, 0, 255), 2);
 	            
 	            // create a new region to look for the eyes
 	            //Nat.updateTrackedObjects();
+	            Mat mEyeGray = new Mat();
+	            Mat mEyeRgba = new Mat();
+	            mEyeGray = mGray.submat(eyearea);
+	            mEyeRgba = mRgba.submat(eyearea);
 	            
-	            //mNativeDetectoreye.detect(faceRect, eyes);
-	            //mNativeDetectoreye.detect(mGray, eyes);
-	            
+	            mEyeDetector.detectMultiScale(mEyeGray, eyes, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 	            // TODO change the tracking
 	            
-	            // need to transfer rotated rectangle to MatOfRect
-	            //mNativeDetectoreye.detectregion(mGray, faces, eyes);
+	            eyesArray = eyes.toArray();
+	            for (int j = 0; j < eyesArray.length; j++)
+	            {
+	            	Core.rectangle(mEyeRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+	            }
 	            
-	            //eyesArray = eyes.toArray();
-	            //for (int j = 0; j < eyesArray.length; j++)
-	            //{
-	            //	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
-	            //}
+	            
 	            
 	            /*
 	        	mNativeDetectormouth.detect(mGray, mouths);
