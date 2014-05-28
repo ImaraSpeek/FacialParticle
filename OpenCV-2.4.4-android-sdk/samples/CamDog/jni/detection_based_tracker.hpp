@@ -39,10 +39,15 @@ class DetectionBasedTracker
         virtual void getObjects(std::vector<cv::Rect>& result) const;
         virtual void getObjects(std::vector<Object>& result) const;
 
+        // got those from out of the protected region
+        //void detectInRegion(const cv::Mat& img, const cv::Rect& r, std::vector<cv::Rect>& detectedObjectsInRegions);
+        //void updateTrackedObjects(std::vector<cv::Rect>& detectedObjects);
+
     protected:
         class SeparateDetectionWork;
         cv::Ptr<SeparateDetectionWork> separateDetectionWork;
         friend void* workcycleObjectDetectorFunction(void* p);
+        friend void* nativeDetectInRegion(long thiz, long inputImage, long faces);
 
 
         struct InnerParameters

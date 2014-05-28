@@ -273,6 +273,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         }
 
         MatOfRect faces = new MatOfRect();
+        MatOfRect trackfaces = new MatOfRect();
         MatOfRect eyes = new MatOfRect();
         MatOfRect mouths = new MatOfRect();
         MatOfRect noses = new MatOfRect();
@@ -301,7 +302,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
                 	
                     // When face is detected, start tracking it using camshifting
-                    cs.create_tracked_object(mRgba,facesArray,cs);
+                    //cs.create_tracked_object(mRgba,facesArray,cs);
+                	//mNativeDetector.track(faces);
                 }
         }
  
@@ -311,37 +313,48 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         if (facedetected)
         {
             // track the face in the new frame
-            trackface = cs.camshift_track_face(mRgba, facesArray, cs);
+            //trackface = cs.camshift_track_face(mRgba, facesArray, cs);
+        	//mNativeDetector.track(faces);
             
             // Convert the rotated rectangle from camshifting to a regular rectangle 
-            trackhue = trackface.boundingRect();
+            //trackhue = trackface.boundingRect();
             
-            Log.i(TAG, "trackhue size is:"+trackhue.area());
+            //Log.i(TAG, "trackhue size is:"+trackhue.area());
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.area() < 100)
+            //if (trackhue.area() < 100)
             //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
-            {
-            	facedetected = false;
-            	facelost = true;
-            }
-            else
-            {	            
+            //{
+            //	facedetected = false;
+            //	facelost = true;
+            //}
+            //else
+            //{	            
 	            //outline face with rectangle
-	            Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
+            	//Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);	           
+            	//Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
-	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
+	            //Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
+            	
+            	//facesArray = faces.toArray();  
+            	//Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
 	            
 	            // create a new region to look for the eyes
-	            //faceImg = mGray.submat(trackhue);
+	            //Nat.updateTrackedObjects();
 	            
-	            //mNativeDetectoreye.detect(mGray.submat(trackhue), eyes);
-	            mNativeDetectoreye.detect(mGray, eyes);
-	            eyesArray = eyes.toArray();
-	            for (int j = 0; j < eyesArray.length; j++)
-	            {
-	            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
-	            }
+	            //mNativeDetectoreye.detect(faceRect, eyes);
+	            //mNativeDetectoreye.detect(mGray, eyes);
+	            
+	            // TODO change the tracking
+	            
+	            // need to transfer rotated rectangle to MatOfRect
+	            //mNativeDetectoreye.detectregion(mGray, faces, eyes);
+	            
+	            //eyesArray = eyes.toArray();
+	            //for (int j = 0; j < eyesArray.length; j++)
+	            //{
+	            //	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+	            //}
 	            
 	            /*
 	        	mNativeDetectormouth.detect(mGray, mouths);
@@ -358,7 +371,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
 	            */
-            }
+            //}
         }
         return mRgba;
     }

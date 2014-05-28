@@ -24,6 +24,17 @@ public class DetectionBasedTracker
     public void detect(Mat imageGray, MatOfRect faces) {
         nativeDetect(mNativeObj, imageGray.getNativeObjAddr(), faces.getNativeObjAddr());
     }
+    
+    /*
+    public void detectregion(Mat imageGray, MatOfRect faces, MatOfRect objects) {
+        nativeDetectInRegion(mNativeObj, imageGray.getNativeObjAddr(), faces.getNativeObjAddr(), objects.getNativeObjAddr());
+    }
+    
+    
+    public void track(MatOfRect faces){
+    	nativeTrack(mNativeObj, faces.getNativeObjAddr());
+    }
+    */
 
     public void release() {
         nativeDestroyObject(mNativeObj);
@@ -38,4 +49,6 @@ public class DetectionBasedTracker
     private static native void nativeStop(long thiz);
     private static native void nativeSetFaceSize(long thiz, int size);
     private static native void nativeDetect(long thiz, long inputImage, long faces);
+    private static native void nativeDetectInRegion(long thiz, long inputImage, long faces, long objects);
+    private static native void nativeTrack(long thiz, long faces);
 }

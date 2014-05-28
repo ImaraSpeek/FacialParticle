@@ -191,3 +191,63 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_
     }
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDetect exit");
 }
+
+/*
+JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeDetectInRegion
+(JNIEnv * jenv, jclass, jlong thiz, jlong imageGray, jlong face, jlong objects)
+{
+    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack enter");
+    try
+    {
+        vector<Rect> RectObjects;
+        ((DetectionBasedTracker*)thiz)->detectInRegion(*((Mat*)imageGray), *((Rect*)face), RectObjects);
+        //((DetectionBasedTracker*)thiz)->process(*((Mat*)imageGray));
+        //((DetectionBasedTracker*)thiz)->getObjects(RectFaces);
+        vector_Rect_to_Mat(RectObjects, *((Mat*)objects));
+    }
+    catch(cv::Exception& e)
+    {
+        LOGD("nativeCreateObject caught cv::Exception: %s", e.what());
+        jclass je = jenv->FindClass("org/opencv/core/CvException");
+        if(!je)
+            je = jenv->FindClass("java/lang/Exception");
+        jenv->ThrowNew(je, e.what());
+    }
+    catch (...)
+    {
+        LOGD("nativeDetect caught unknown exception");
+        jclass je = jenv->FindClass("java/lang/Exception");
+        jenv->ThrowNew(je, "Unknown exception in JNI code {highgui::VideoCapture_n_1VideoCapture__()}");
+    }
+    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack exit");
+}
+
+JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack
+(JNIEnv * jenv, jclass, jlong thiz, jlong face)
+{
+    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack enter");
+    try
+    {
+        vector<Rect> RectFaces;
+        ((DetectionBasedTracker*)thiz)->updateTrackedObjects(RectFaces);
+        //((DetectionBasedTracker*)thiz)->process(*((Mat*)imageGray));
+        //((DetectionBasedTracker*)thiz)->getObjects(RectFaces);
+        vector_Rect_to_Mat(RectFaces, *((Mat*)face));
+    }
+    catch(cv::Exception& e)
+    {
+        LOGD("nativeCreateObject caught cv::Exception: %s", e.what());
+        jclass je = jenv->FindClass("org/opencv/core/CvException");
+        if(!je)
+            je = jenv->FindClass("java/lang/Exception");
+        jenv->ThrowNew(je, e.what());
+    }
+    catch (...)
+    {
+        LOGD("nativeDetect caught unknown exception");
+        jclass je = jenv->FindClass("java/lang/Exception");
+        jenv->ThrowNew(je, "Unknown exception in JNI code {highgui::VideoCapture_n_1VideoCapture__()}");
+    }
+    LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack exit");
+}
+*/
