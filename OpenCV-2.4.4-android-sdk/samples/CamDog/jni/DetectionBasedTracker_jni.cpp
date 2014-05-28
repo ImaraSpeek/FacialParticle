@@ -222,6 +222,7 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack exit");
 }
 
+
 JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack
 (JNIEnv * jenv, jclass, jlong thiz, jlong face)
 {
@@ -251,3 +252,4 @@ JNIEXPORT void JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_
     LOGD("Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeTrack exit");
 }
 */
+

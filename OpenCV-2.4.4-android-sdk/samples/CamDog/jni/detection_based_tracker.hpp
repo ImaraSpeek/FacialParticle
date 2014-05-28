@@ -47,7 +47,7 @@ class DetectionBasedTracker
         class SeparateDetectionWork;
         cv::Ptr<SeparateDetectionWork> separateDetectionWork;
         friend void* workcycleObjectDetectorFunction(void* p);
-        friend void* nativeDetectInRegion(long thiz, long inputImage, long faces);
+        //friend void* nativeDetectInRegion(long thiz, long inputImage, long faces);
 
 
         struct InnerParameters
@@ -98,9 +98,9 @@ class DetectionBasedTracker
         cv::CascadeClassifier cascadeForTracking;
 
 
-        void updateTrackedObjects(const std::vector<cv::Rect>& detectedObjects);
+        friend void updateTrackedObjects(const std::vector<cv::Rect>& detectedObjects);
         cv::Rect calcTrackedObjectPositionToShow(int i) const;
-        void detectInRegion(const cv::Mat& img, const cv::Rect& r, std::vector<cv::Rect>& detectedObjectsInRegions);
+        friend void detectInRegion(const cv::Mat& img, const cv::Rect& r, std::vector<cv::Rect>& detectedObjectsInRegions);
 };
 
 namespace cv

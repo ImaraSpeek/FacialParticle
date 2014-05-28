@@ -290,6 +290,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
+        
         if (mNativeDetector != null && !facedetected){
        			// TODO check the previous region, track
        			mNativeDetector.detect(mGray, faces);
@@ -302,10 +303,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
                 	
                     // When face is detected, start tracking it using camshifting
-                    //cs.create_tracked_object(mRgba,facesArray,cs);
+                    cs.create_tracked_object(mRgba,facesArray,cs);
                 	//mNativeDetector.track(faces);
                 }
         }
+
  
         // TODO check if we need to only capture a single face
         
@@ -313,28 +315,28 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         if (facedetected)
         {
             // track the face in the new frame
-            //trackface = cs.camshift_track_face(mRgba, facesArray, cs);
+            trackface = cs.camshift_track_face(mRgba, facesArray, cs);
         	//mNativeDetector.track(faces);
             
             // Convert the rotated rectangle from camshifting to a regular rectangle 
-            //trackhue = trackface.boundingRect();
+            trackhue = trackface.boundingRect();
             
-            //Log.i(TAG, "trackhue size is:"+trackhue.area());
+            Log.i(TAG, "trackhue size is:"+trackhue.area());
             
             // check whether the face is still a valid detection, else check again
-            //if (trackhue.area() < 100)
+            if (trackhue.area() < 100)
             //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
-            //{
-            //	facedetected = false;
-            //	facelost = true;
-            //}
-            //else
-            //{	            
+            {
+            	facedetected = false;
+            	facelost = true;
+            }
+            else
+            {	            
 	            //outline face with rectangle
             	//Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);	           
-            	//Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
+            	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
-	            //Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
+	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             	
             	//facesArray = faces.toArray();  
             	//Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
@@ -371,7 +373,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
 	            */
-            //}
+            }
         }
         return mRgba;
     }
