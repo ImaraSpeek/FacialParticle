@@ -77,7 +77,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // for tracking the face
     CamShifting cs;
     CamShifting cseyes;
-    
+        
     private boolean				   facedetected = false;
     private boolean				   facelost = false;
     private boolean				   eyesdetected = false;
@@ -257,6 +257,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray.release();
         mRgba.release();
     }
+       
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
@@ -289,9 +290,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
         if (mNativeDetector != null && !facedetected){
-        		//if (facelost)
-        			// TODO check the previous region, track
-        			mNativeDetector.detect(mGray, faces);
+       			// TODO check the previous region, track
+       			mNativeDetector.detect(mGray, faces);
                 // check if there is a face detected and assign them to the array
                 if (!faces.empty())
                 {
@@ -316,8 +316,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             // Convert the rotated rectangle from camshifting to a regular rectangle 
             trackhue = trackface.boundingRect();
             
+            Log.i(TAG, "trackhue size is:"+trackhue.area());
+            
             // check whether the face is still a valid detection, else check again
-            if (trackhue.area() < 100 || trackhue.width > 350 || trackhue.height > 800)
+            if (trackhue.area() < 100)
             //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
             {
             	facedetected = false;
@@ -326,15 +328,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             else
             {	            
 	            //outline face with rectangle
-	            //Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);
 	            Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
-	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR);
+	            //outline the tracked eclipse
+	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
 	            
 	            // create a new region to look for the eyes
 	            //faceImg = mGray.submat(trackhue);
 	            
-	            mNativeDetectoreye.detect(mGray.submat(trackhue), eyes);
-	            //mNativeDetectoreye.detect(mGray, eyes);
+	            //mNativeDetectoreye.detect(mGray.submat(trackhue), eyes);
+	            mNativeDetectoreye.detect(mGray, eyes);
 	            eyesArray = eyes.toArray();
 	            for (int j = 0; j < eyesArray.length; j++)
 	            {
@@ -356,54 +358,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
 	            */
-	            
-	            //System.out.println(trackface.size.area());
-	            //System.out.println(trackface.size.width);
-	            /*
-	            if (mNativeDetectoreye != null && !eyesdetected)
-	            {
-	            	if (eyeslost)
-	            	{
-	            		// TODO check the previous region, track
-	            		mNativeDetectoreye.detect(mGray, eyes);
-	            	}
-	            	else
-	            	{
-	            		mNativeDetectoreye.detect(mGray, eyes);
-	            	}
-	                   // check if there is a face detected and assign them to the array
-	                if (!eyes.empty())
-	                {
-	                   	eyesArray = eyes.toArray();  
-	                   	eyesdetected = true;
-	                   	eyeslost = false;
-	                   	Core.rectangle(mRgba, eyesArray[0].tl(), eyesArray[0].br(), EYES_RECT_COLOR, 3);
-	                    // When face is detected, start tracking it using camshifting
-	                    //cseyes.create_tracked_object(mRgba,eyesArray,cseyes);
-	                }
-	            }
-	                
-		        if (eyesdetected)
-		        {
-		        	mNativeDetectoreye.detect(mGray, eyes);
-		        	eyesArray = eyes.toArray();
-		            for (int j = 0; j < eyesArray.length; j++)
-		            {
-		            	Core.rectangle(mRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
-		            }
-		        	
-		            //track the face in the new frame
-		            trackeyes = cseyes.camshift_track_face(mRgba, eyesArray, cseyes);
-		            
-		            // check whether the face is still a valid detection, else check again
-		            if (trackeyes.size.area() < 100)
-		            {
-		            	eyesdetected = false;
-		            	eyeslost = true;
-		            }
-		            
-		        }
-		        */
             }
         }
         return mRgba;
