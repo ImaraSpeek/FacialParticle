@@ -366,7 +366,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            mEyeGray = mGray.submat(eyearea);
 	            mEyeRgba = mRgba.submat(eyearea);
 	            
+	            // Java detector performs betters
 	            mEyeDetector.detectMultiScale(mEyeGray, eyes, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+	            //mNativeDetectoreye.detect(mEyeGray, eyes);
 	            // TODO change the tracking
 	            
 	            eyesArray = eyes.toArray();
