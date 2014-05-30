@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#A9F5A9"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/sensorstext"
+        android:layout_width="172dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="50dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="50dp" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="289dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="@string/events_list_str"
+        android:textStyle="bold" />
+
+    <ListView
+        android:id="@+id/eventList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:cacheColorHint="#00000000"
+        android:divider="#ff505050"
+        android:dividerHeight="1dp"
+        android:minHeight="?android:attr/listPreferredItemHeight"
+        android:padding="25dp"
+        android:transcriptMode="alwaysScroll" >
+    </ListView>
+
+</LinearLayout>
+
