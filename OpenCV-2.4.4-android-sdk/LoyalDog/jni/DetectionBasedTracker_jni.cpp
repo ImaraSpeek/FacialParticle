@@ -2,15 +2,6 @@
 #include <core.hpp>
 #include <detection_based_tracker.hpp>
 
-#include <opencv2/contrib/contrib.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/objdetect/objdetect.hpp>
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
 #include <string>
 #include <vector>
 

@@ -65,7 +65,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private DetectionBasedTracker  mNativeDetectoreye;
     private DetectionBasedTracker  mNativeDetectormouth;
     private DetectionBasedTracker  mNativeDetectornose;
-    private DetectionBasedTracker  mRecognizer;
     private CascadeClassifier      mEyeDetector;
     
     
