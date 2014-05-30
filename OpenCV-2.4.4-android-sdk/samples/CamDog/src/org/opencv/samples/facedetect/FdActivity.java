@@ -1,6 +1,7 @@
 package org.opencv.samples.facedetect;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
@@ -21,15 +23,18 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
 //import org.opencv.samples.fd.CamShifting;
 
-
-
-
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.CompressFormat;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
 
@@ -46,6 +51,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    DEBUG_RECT_COLOR    = new Scalar(255, 255, 255, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
+    
+    public static File working_Dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/opencv");
+    static File fileC;
+    static {
+    	working_Dir.mkdirs();
+    	 fileC = new File(FdActivity.working_Dir,"csv.txt");
+    
+    }
+	public static boolean pictureTaken,recognized;
 
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
@@ -71,6 +85,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
+    private static String		   current_name 		= "Imara";
 
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
@@ -87,6 +102,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private boolean				   eyeslost = false;
     
     private long				   starttime = 0;
+    Bitmap bmp;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -221,6 +237,29 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         }
     };
     
+    // A button listener for all the buttons
+    private class ButtonListener implements View.OnClickListener{
+    	Intent i;
+    	FileOutputStream out;
+    	
+		public void onClick(View v) {
+			if(v.equals(findViewById(R.id.TakeImage))){
+				 try {
+			            File file = new File(FdActivity.working_Dir, FdActivity.current_name +".jpg");
+		//	            face_db.add(Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+FdActivity.current_name+".jpg");
+			            if(!file.exists()) file.createNewFile();
+			            out = new FileOutputStream(file);
+			            bmp.compress(CompressFormat.JPEG, 90, out);
+			        } catch (FileNotFoundException e) {
+			            e.printStackTrace();
+			        } catch (Exception e) {
+			            e.printStackTrace();
+			        }
+			}
+			
+		}
+    }
+    
     
     public FdActivity() {
         mDetectorName = new String[2];
@@ -277,6 +316,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
+        
+        bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(),Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mRgba, bmp);
 
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -350,6 +392,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            //outline the tracked eclipse
 	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
 	            
+	            // Resize the face you have just found to fit the original images of the faces
+	            Mat face_resized;
+	            //mRecognizer.resize(trackhue, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
+	            
+	            /*
 	            // compute the eye area
 	            Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - 2*trackhue.width/8,(int)( trackhue.height/3.0));
 	            // split it
@@ -377,6 +424,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            {
 	            	Core.rectangle(mEyeRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
 	            }
+	            */
 	            
 	            
 	            
