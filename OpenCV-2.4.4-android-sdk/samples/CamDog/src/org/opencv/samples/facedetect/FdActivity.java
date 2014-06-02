@@ -18,10 +18,12 @@ import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
 //import org.opencv.samples.fd.CamShifting;
+
 
 import android.app.Activity;
 import android.content.Context;
@@ -37,6 +39,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
+
 
 @SuppressWarnings("unused")
 public class FdActivity extends Activity implements CvCameraViewListener2 {
@@ -67,6 +70,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private MenuItem               mItemFace20;
 
     private Mat                    mRgba;
+    private Mat					   mGrayScale;
     private Mat                    mGray;
     private Mat					   mFace;
     
@@ -103,6 +107,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     private long				   starttime = 0;
     Bitmap bmp;
+    private static int		 	   SCALE = 2;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -119,8 +124,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     	// initialize new camshift
                     	cs = new CamShifting();                    	
                     	
-                        // load cascade file from application resources - lpbcascade is faster than haarcascade but 
-                    	// not as robust
+                        // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
                         //InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
                     	InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
@@ -136,6 +140,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         is.close();
                         os.close();
 
+                        // create the native detector for opencv
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
                         cascadeDir.delete();
@@ -171,6 +176,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                             Log.i(TAG, "Loaded eye cascade classifier from " + mCascadeFileeye.getAbsolutePath());
                         }
 
+                        // create detector for the eyes
                         mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
 
                         cascadeDireye.delete();
@@ -195,6 +201,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         ismouth.close();
                         osmouth.close();
 
+                        // create detector mouth
                         mNativeDetectormouth = new DetectionBasedTracker(mCascadeFilemouth.getAbsolutePath(), 0);
 
                         cascadeDirmouth.delete();
@@ -243,19 +250,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	FileOutputStream out;
     	
 		public void onClick(View v) {
-			if(v.equals(findViewById(R.id.TakeImage))){
-				 try {
-			            File file = new File(FdActivity.working_Dir, FdActivity.current_name +".jpg");
-		//	            face_db.add(Environment.getExternalStorageDirectory().getAbsolutePath()+"/"+FdActivity.current_name+".jpg");
-			            if(!file.exists()) file.createNewFile();
-			            out = new FileOutputStream(file);
-			            bmp.compress(CompressFormat.JPEG, 90, out);
-			        } catch (FileNotFoundException e) {
-			            e.printStackTrace();
-			        } catch (Exception e) {
-			            e.printStackTrace();
-			        }
-			}
 			
 		}
     }
@@ -304,11 +298,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
         mRgba = new Mat();
+        mGrayScale = new Mat();
     }
 
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
+        mGrayScale.release();
     }
        
 
@@ -317,8 +313,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         
-        bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(),Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mRgba, bmp);
+        // new scale for smaller image
+        Size scaling = new Size(mGray.size().width/2, mGray.size().height/2);
+        // mGrayScale = mGray.reshape(SCALE);
+      	//cvResize(mGray, mGrayScale, SCALE);
+        Imgproc.resize(mGray, mGrayScale, scaling);
+        
+        
+        // bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(),Bitmap.Config.ARGB_8888);
+        // Utils.matToBitmap(mRgba, bmp);
 
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -348,8 +351,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // TODO add a way to falsify more than 1 face
         
         if (mNativeDetector != null && !facedetected){
-       			// TODO check the previous region, track
-       			mNativeDetector.detect(mGray, faces);
+       			// detect the faces using opencv
+       			//mNativeDetector.detect(mGray, faces);
+        		mNativeDetector.detect(mGrayScale, faces);
+   			
                 // check if there is a face detected and assign them to the array
                 if (!faces.empty())
                 {
@@ -360,13 +365,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	
                     // When face is detected, start tracking it using camshifting
                     cs.create_tracked_object(mRgba,facesArray,cs);
-                	//mNativeDetector.track(faces);
                 }
         }
 
- 
-        // TODO check if we need to only capture a single face
-        
         // if a face has already been detected, we should track that face until it is lost
         if (facedetected)
         {
@@ -375,11 +376,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             // Convert the rotated rectangle from cam shifting to a regular rectangle 
             trackhue = trackface.boundingRect();
             
-            Log.i(TAG, "trackhue size is:"+trackhue.area());
-            
             // check whether the face is still a valid detection, else check again
             if (trackhue.area() < 100 )
-            //if (trackface.size.area() < 100 || trackface.size.width > 350 || trackface.size.height > 800)
             {
             	facedetected = false;
             	facelost = true;
@@ -387,7 +385,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             else
             {	            
 	            //outline face with rectangle
-            	//Core.rectangle(mRgba, trackface.boundingRect().tl(), trackface.boundingRect().br(), HUE_RECT_COLOR, 3);	           
             	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
 	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
