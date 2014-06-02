@@ -23,9 +23,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
-//import org.opencv.samples.fd.CamShifting;
-
-
 
 import android.app.Activity;
 import android.content.Context;
@@ -128,10 +125,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     	cs = new CamShifting();                    	
                     	
                         // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
-                        //InputStream is = getResources().openRawResource(R.raw.haarcascade_frontalface_default);
-                    	InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        //mCascadeFile = new File(cascadeDir, "haarcascade_frontalface.xml");
                         mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
@@ -341,11 +336,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         MatOfRect trackfaces = new MatOfRect();
         
         MatOfRect eyes = new MatOfRect();
+        MatOfRect lefteye = new MatOfRect();
+        MatOfRect righteye = new MatOfRect();
+        
         MatOfRect mouths = new MatOfRect();
         MatOfRect noses = new MatOfRect();
         
+        Point leftEye, rightEye;    // Position of the detected eyes.
+        
         Rect[] facesArray = null;
         Rect[] eyesArray = null;
+        Rect[] eyeleftArray = null;
+        Rect[] eyerightArray = null;
         Rect[] mouthsArray = null;
         Rect[] nosesArray = null;
         
@@ -401,12 +403,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
 	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
-	            
-	            // Resize the face you have just found to fit the original images of the faces
-	            Mat face_resized;
-	            //mRecognizer.resize(trackhue, face_resized, Size(im_width, im_height), 1.0, 1.0, INTER_CUBIC);
-	            
-	            /*
+	           
 	            // compute the eye area
 	            Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - 2*trackhue.width/8,(int)( trackhue.height/3.0));
 	            // split it
@@ -415,20 +412,30 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
 	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , MOUTH_RECT_COLOR, 2);
 	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), MOUTH_RECT_COLOR, 2);
-	            //Core.rectangle(mRgba, eyearea.tl(),eyearea.br() , new Scalar(255, 0, 0, 255), 2);
 	            
 	            // create a new region to look for the eyes
-	            //Nat.updateTrackedObjects();
-	            Mat mEyeGray = new Mat();
-	            Mat mEyeRgba = new Mat();
-	            mEyeGray = mGray.submat(eyearea);
-	            mEyeRgba = mRgba.submat(eyearea);
+	            Mat mEyeGrayLeft = new Mat();
+	            Mat mEyeRgbaLeft = new Mat();
+	            Mat mEyeGrayRight = new Mat();
+	            Mat mEyeRgbaRight = new Mat();
+	            mEyeGrayLeft = mGray.submat(eyearea_left);
+	            mEyeRgbaLeft = mRgba.submat(eyearea_left);
+	            mEyeGrayRight = mGray.submat(eyearea_right);
+	            mEyeRgbaRight = mRgba.submat(eyearea_right);
 	            
 	            // Java detector performs betters
-	            mEyeDetector.detectMultiScale(mEyeGray, eyes, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-	            //mNativeDetectoreye.detect(mEyeGray, eyes);
-	            // TODO change the tracking
+	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+	            mEyeDetector.detectMultiScale(mEyeGrayRight, righteye, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 	            
+		       eyeleftArray = lefteye.toArray();
+		       eyerightArray = righteye.toArray();
+		       for (int j = 0; j < eyeleftArray.length; j++){
+		    	   Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
+		       }
+		       for (int j = 0; j < eyerightArray.length; j++){
+		            Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
+		       }
+	            /*
 	            eyesArray = eyes.toArray();
 	            for (int j = 0; j < eyesArray.length; j++)
 	            {
