@@ -14,6 +14,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
@@ -23,6 +24,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
 //import org.opencv.samples.fd.CamShifting;
+
 
 
 import android.app.Activity;
@@ -70,8 +72,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private MenuItem               mItemFace20;
 
     private Mat                    mRgba;
-    private Mat					   mGrayScale;
     private Mat                    mGray;
+    private Mat					   mRgbaScale;
+    private Mat					   mGrayScale;
     private Mat					   mFace;
     
     private File                   mCascadeFile;
@@ -299,12 +302,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray = new Mat();
         mRgba = new Mat();
         mGrayScale = new Mat();
+        mRgbaScale = new Mat();
     }
 
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
         mGrayScale.release();
+        mRgbaScale.release();
     }
        
 
@@ -314,10 +319,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray = inputFrame.gray();
         
         // new scale for smaller image
-        Size scaling = new Size(mGray.size().width/2, mGray.size().height/2);
-        // mGrayScale = mGray.reshape(SCALE);
-      	//cvResize(mGray, mGrayScale, SCALE);
+        Size scaling = new Size(mGray.size().width/SCALE, mGray.size().height/SCALE);
         Imgproc.resize(mGray, mGrayScale, scaling);
+        Imgproc.resize(mRgba, mRgbaScale, scaling);
+        Size backscaling = new Size(mGray.size().width, mGray.size().height);
         
         
         // bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(),Bitmap.Config.ARGB_8888);
@@ -331,17 +336,22 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
 
+        MatOfRect initfaces = new MatOfRect();
         MatOfRect faces = new MatOfRect();
         MatOfRect trackfaces = new MatOfRect();
+        
         MatOfRect eyes = new MatOfRect();
         MatOfRect mouths = new MatOfRect();
         MatOfRect noses = new MatOfRect();
+        
         Rect[] facesArray = null;
         Rect[] eyesArray = null;
         Rect[] mouthsArray = null;
         Rect[] nosesArray = null;
+        
         RotatedRect trackeyes = null;
         RotatedRect trackface = null;
+        
         Mat faceImg = null;
         int facetoprow, facebottomrow, faceleftcolumn, facerightcolumn;
         
@@ -354,6 +364,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
        			// detect the faces using opencv
        			//mNativeDetector.detect(mGray, faces);
         		mNativeDetector.detect(mGrayScale, faces);
+        		
+        		//Imgproc.resize(initfaces, faces, backscaling);
    			
                 // check if there is a face detected and assign them to the array
                 if (!faces.empty())
@@ -362,7 +374,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 	facedetected = true;
                 	facelost = false;
                 	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-                	
+                
                     // When face is detected, start tracking it using camshifting
                     cs.create_tracked_object(mRgba,facesArray,cs);
                 }
@@ -383,7 +395,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             	facelost = true;
             }
             else
-            {	            
+            {	    
+                    
 	            //outline face with rectangle
             	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
 	            //outline the tracked eclipse
