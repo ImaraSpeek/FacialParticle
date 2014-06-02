@@ -84,7 +84,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private DetectionBasedTracker  mNativeDetectormouth;
     private DetectionBasedTracker  mNativeDetectornose;
     private DetectionBasedTracker  mRecognizer;
-    private CascadeClassifier      mEyeDetector;
+    
+    private CascadeClassifier      mFaceDetector, mEyeDetector, mMouthDetector;
     
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
@@ -138,6 +139,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         is.close();
                         os.close();
 
+                        // This part is for the java cascade classifier 
+                        mFaceDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+                        if (mFaceDetector.empty()) {
+                            Log.e(TAG, "Failed to load Face cascade classifier");
+                            mFaceDetector = null;
+                        } else
+                        {
+                            Log.i(TAG, "Loaded Face cascade classifier from " + mCascadeFile.getAbsolutePath());
+                        }
+                        
                         // create the native detector for opencv
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
@@ -175,7 +186,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
 
                         // create detector for the eyes
-                        mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
+                        //mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
 
                         cascadeDireye.delete();
 
@@ -198,9 +209,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         ismouth.close();
                         osmouth.close();
+                        
+                        // This part is for the java cascade classifier to search within region
+                        mMouthDetector = new CascadeClassifier(mCascadeFilemouth.getAbsolutePath());
+                        if (mMouthDetector.empty()) {
+                            Log.e(TAG, "Failed to load mouth cascade classifier");
+                            mMouthDetector = null;
+                        } else
+                        {
+                            Log.i(TAG, "Loaded eye cascade classifier from " + mCascadeFilemouth.getAbsolutePath());
+                        }
 
                         // create detector mouth
-                        mNativeDetectormouth = new DetectionBasedTracker(mCascadeFilemouth.getAbsolutePath(), 0);
+                        //mNativeDetectormouth = new DetectionBasedTracker(mCascadeFilemouth.getAbsolutePath(), 0);
 
                         cascadeDirmouth.delete();
 
@@ -315,8 +336,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         
         // new scale for smaller image
         Size scaling = new Size(mGray.size().width/SCALE, mGray.size().height/SCALE);
-        Imgproc.resize(mGray, mGrayScale, scaling);
-        Imgproc.resize(mRgba, mRgbaScale, scaling);
+        //Imgproc.resize(mGray, mGrayScale, scaling);
+        //Imgproc.resize(mRgba, mRgbaScale, scaling);
         Size backscaling = new Size(mGray.size().width, mGray.size().height);
         
         
@@ -362,26 +383,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
         
-        if (mNativeDetector != null && !facedetected){
-       			// detect the faces using opencv
-       			//mNativeDetector.detect(mGray, faces);
-        		mNativeDetector.detect(mGrayScale, faces);
-        		
-        		//Imgproc.resize(initfaces, faces, backscaling);
-   			
-                // check if there is a face detected and assign them to the array
-                if (!faces.empty())
-                {
-                	facesArray = faces.toArray();  
-                	facedetected = true;
-                	facelost = false;
-                	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-                
-                    // When face is detected, start tracking it using camshifting
-                    cs.create_tracked_object(mRgba,facesArray,cs);
-                }
-        }
-
         // if a face has already been detected, we should track that face until it is lost
         if (facedetected)
         {
@@ -389,29 +390,49 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
             // Convert the rotated rectangle from cam shifting to a regular rectangle 
             trackhue = trackface.boundingRect();
+            //outline face with rectangle
+        	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
+            //outline the tracked eclipse
+            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.area() < 100 )
+            if (trackhue.area() < 100 || trackhue.width < 300)
             {
             	facedetected = false;
             	facelost = true;
             }
-            else
-            {	    
-                    
-	            //outline face with rectangle
-            	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
-	            //outline the tracked eclipse
-	            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
-	           
+        }
+        // if the face is not tracked, we should detect it again
+        else
+        {	
+    		// detect the faces using opencv
+   			//mNativeDetector.detect(mGray, faces);
+    		//mNativeDetector.detect(mGrayScale, faces);
+   			mFaceDetector.detectMultiScale(mGray, faces, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+        
+            // check if there is a face detected and assign them to the array
+            if (!faces.empty())
+            {
+            	facesArray = faces.toArray();  
+            	facedetected = true;
+            	facelost = false;
+            	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+            
+                // When face is detected, start tracking it using camshifting
+                cs.create_tracked_object(mRgba,facesArray,cs);
+            }
+        }
+        // TODO maybe should still check whether or not a face has been recognized
+                         
+	            /*
 	            // compute the eye area
-	            Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - 2*trackhue.width/8,(int)( trackhue.height/3.0));
+	           	// Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
 	            // split it
-	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - 2*trackhue.width/16)/2,(int)( trackhue.height/3.0));
-	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 +(trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - 2*trackhue.width/16)/2,(int)( trackhue.height/3.0));
+	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/2.0));
+	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 +(trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/2.0));
 	            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
-	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , MOUTH_RECT_COLOR, 2);
-	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), MOUTH_RECT_COLOR, 2);
+	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , NOSE_RECT_COLOR, 2);
+	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), NOSE_RECT_COLOR, 2);
 	            
 	            // create a new region to look for the eyes
 	            Mat mEyeGrayLeft = new Mat();
@@ -423,36 +444,39 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            mEyeGrayRight = mGray.submat(eyearea_right);
 	            mEyeRgbaRight = mRgba.submat(eyearea_right);
 	            
-	            // Java detector performs betters
-	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-	            mEyeDetector.detectMultiScale(mEyeGrayRight, righteye, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+	            // Java detector performs betters, detect eyes
+	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
+	            mEyeDetector.detectMultiScale(mEyeGrayRight, righteye, 1.1,2,2,new Size(), new Size());
 	            
-		       eyeleftArray = lefteye.toArray();
-		       eyerightArray = righteye.toArray();
-		       for (int j = 0; j < eyeleftArray.length; j++){
-		    	   Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
-		       }
-		       for (int j = 0; j < eyerightArray.length; j++){
-		            Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
-		       }
-	            /*
-	            eyesArray = eyes.toArray();
-	            for (int j = 0; j < eyesArray.length; j++)
-	            {
-	            	Core.rectangle(mEyeRgba, eyesArray[j].tl(), eyesArray[j].br(), EYES_RECT_COLOR, 3);            	
+	            // transform to arrays and print the eyes
+	            eyeleftArray = lefteye.toArray();
+	            eyerightArray = righteye.toArray();
+	            for (int j = 0; j < eyeleftArray.length; j++){
+	            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
 	            }
-	            */
+	            for (int j = 0; j < eyerightArray.length; j++){
+	            	Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
+	            }	            
 	            
+	            // compute the mouth area
+		        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
+		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
+	            Mat mMouthGray = new Mat();
+	            Mat mMouthRgba = new Mat();
+	            mMouthGray = mGray.submat(moutharea);
+	            mMouthRgba = mRgba.submat(moutharea);
 	            
-	            
-	            /*
-	        	mNativeDetectormouth.detect(mGray, mouths);
+	            mMouthDetector.detectMultiScale(mMouthGray, mouths, 1.1, 2, 2, new Size(), new Size());
+	        	//mNativeDetectormouth.detect(mGray, mouths);
 	        	mouthsArray = mouths.toArray();
 	            for (int j = 0; j < mouthsArray.length; j++)
 	            {
-	            	Core.rectangle(mRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
+	            	Core.rectangle(mMouthRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
 	            }
 	            
+	            */
+	            
+	            /*	            
 	        	mNativeDetectornose.detect(mGray, noses);
 	        	nosesArray = noses.toArray();
 	            for (int j = 0; j < nosesArray.length; j++)
@@ -460,8 +484,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
 	            */
-            }
-        }
+
         return mRgba;
     }
 
