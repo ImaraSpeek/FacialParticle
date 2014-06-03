@@ -85,7 +85,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private DetectionBasedTracker  mNativeDetectornose;
     private DetectionBasedTracker  mRecognizer;
     
-    private CascadeClassifier      mFaceDetector, mEyeDetector, mMouthDetector;
+    private CascadeClassifier      mFaceDetector, mEyeDetector, mMouthDetector, mNoseDetector;
     
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
@@ -243,8 +243,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         isnose.close();
                         osnose.close();
+                        
+                        // This part is for the java cascade classifier to search within region
+                        mNoseDetector = new CascadeClassifier(mCascadeFilenose.getAbsolutePath());
+                        if (mNoseDetector.empty()) {
+                            Log.e(TAG, "Failed to load nose cascade classifier");
+                            mNoseDetector = null;
+                        } else
+                        {
+                            Log.i(TAG, "Loaded nose cascade classifier from " + mCascadeFilenose.getAbsolutePath());
+                        }
 
-                        mNativeDetectornose = new DetectionBasedTracker(mCascadeFilenose.getAbsolutePath(), 0);
+                        //mNativeDetectornose = new DetectionBasedTracker(mCascadeFilenose.getAbsolutePath(), 0);
 
                         cascadeDirnose.delete();
 
@@ -375,6 +385,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         RotatedRect trackeyes = null;
         RotatedRect trackface = null;
         
+        // create a new region to look for the eyes
+        Mat mEyeGrayLeft = new Mat();
+        Mat mEyeRgbaLeft = new Mat();
+        Mat mEyeGrayRight = new Mat();
+        Mat mEyeRgbaRight = new Mat();
+        Mat mNoseGray = new Mat();
+        Mat mNoseRgba = new Mat();
+        
+        
         Mat faceImg = null;
         int facetoprow, facebottomrow, faceleftcolumn, facerightcolumn;
         
@@ -396,7 +415,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.width < 200)
+            if (trackhue.width < 200 && trackhue.x > 0 && trackhue.x < mGray.width() && trackhue.y > 0 && trackhue.y < mGray.height())
             {
             	facedetected = false;
             	facelost = true;
@@ -406,8 +425,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         else
         {	
     		// detect the faces using opencv
-   			//mNativeDetector.detect(mGray, faces);
-    		//mNativeDetector.detect(mGrayScale, faces);
    			mFaceDetector.detectMultiScale(mGray, faces, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
         
             // check if there is a face detected and assign them to the array
@@ -425,26 +442,28 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 // Convert the rotated rectangle from cam shifting to a regular rectangle 
                 trackhue = trackface.boundingRect();
             }
-        }
-        // TODO maybe should still check whether or not a face has been recognized
-                         
+        }                
 	    if (facedetected)
 	    {
+	    	
 	            // compute the eye area
 	           	// Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
 	            // split it
-	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/2.0));
-	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 +(trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/2.0));
+	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
+	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 + (trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
 	            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
-	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , NOSE_RECT_COLOR, 2);
-	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), NOSE_RECT_COLOR, 2);
+	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , DEBUG_RECT_COLOR, 2);
+	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), DEBUG_RECT_COLOR, 2);
 	            
 	            /*
-	            // create a new region to look for the eyes
-	            Mat mEyeGrayLeft = new Mat();
-	            Mat mEyeRgbaLeft = new Mat();
-	            Mat mEyeGrayRight = new Mat();
-	            Mat mEyeRgbaRight = new Mat();
+	            mEyeGrayLeft = mGray.adjustROI((eyearea_left.y - eyearea_left.height), eyearea_left.y, eyearea_left.x, (eyearea_left.x + eyearea_left.width));
+	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
+	            eyeleftArray = lefteye.toArray();
+	            for (int j = 0; j < eyeleftArray.length; j++){
+	            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
+	            }
+	            */
+	            
 	            mEyeGrayLeft = mGray.submat(eyearea_left);
 	            mEyeRgbaLeft = mRgba.submat(eyearea_left);
 	            mEyeGrayRight = mGray.submat(eyearea_right);
@@ -464,10 +483,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
 	            }	            
 	            
+	            
 	            // compute the mouth area
-		        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
+		        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/3.0));
 		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
-	            Mat mMouthGray = new Mat();
+	            
+		        /*
+		        Mat mMouthGray = new Mat();
 	            Mat mMouthRgba = new Mat();
 	            mMouthGray = mGray.submat(moutharea);
 	            mMouthRgba = mRgba.submat(moutharea);
@@ -479,17 +501,23 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            {
 	            	Core.rectangle(mMouthRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
 	            }
-	            
 	            */
+		        
+		        // compute the nose area
+		        Rect nosearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/4,(int)( trackhue.height/3.5));
+		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
 	            
-	            /*	            
-	        	mNativeDetectornose.detect(mGray, noses);
+		        mNoseGray = mGray.submat(nosearea);
+		        mNoseRgba = mRgba.submat(nosearea);
+		        mNoseDetector.detectMultiScale(mNoseGray, noses, 1.1,2,2,new Size(), new Size());
+	            
+	        	//mNativeDetectornose.detect(mGray, noses);
 	        	nosesArray = noses.toArray();
 	            for (int j = 0; j < nosesArray.length; j++)
 	            {
-	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
+	            	Core.rectangle(mNoseRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
-	            */
+	      
 	    }
         return mRgba;
     }
