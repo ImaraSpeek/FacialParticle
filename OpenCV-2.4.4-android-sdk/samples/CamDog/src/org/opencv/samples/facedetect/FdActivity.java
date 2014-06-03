@@ -396,7 +396,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.area() < 100 || trackhue.width < 300)
+            if (trackhue.width < 200)
             {
             	facedetected = false;
             	facelost = true;
