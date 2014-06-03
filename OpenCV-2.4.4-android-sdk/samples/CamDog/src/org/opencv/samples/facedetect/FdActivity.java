@@ -392,6 +392,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         Mat mEyeRgbaRight = new Mat();
         Mat mNoseGray = new Mat();
         Mat mNoseRgba = new Mat();
+
+        Mat mMouthGray = new Mat();
+        Mat mMouthRgba = new Mat();
+        
         
         
         Mat faceImg = null;
@@ -486,12 +490,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            
 	            // compute the mouth area
 		        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/3.0));
-		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
+		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
 	            
-		        /*
-		        Mat mMouthGray = new Mat();
-	            Mat mMouthRgba = new Mat();
-	            mMouthGray = mGray.submat(moutharea);
+		        mMouthGray = mGray.submat(moutharea);
 	            mMouthRgba = mRgba.submat(moutharea);
 	            
 	            mMouthDetector.detectMultiScale(mMouthGray, mouths, 1.1, 2, 2, new Size(), new Size());
@@ -501,8 +502,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            {
 	            	Core.rectangle(mMouthRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
 	            }
-	            */
+	           
 		        
+		        /*
 		        // compute the nose area
 		        Rect nosearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/4,(int)( trackhue.height/3.5));
 		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
@@ -517,6 +519,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            {
 	            	Core.rectangle(mNoseRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
+	            */
 	      
 	    }
         return mRgba;
