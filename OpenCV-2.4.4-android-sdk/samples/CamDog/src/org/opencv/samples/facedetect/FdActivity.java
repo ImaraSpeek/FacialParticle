@@ -420,11 +420,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             
                 // When face is detected, start tracking it using camshifting
                 cs.create_tracked_object(mRgba,facesArray,cs);
+                // track the face in the new frame
+                trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
+                // Convert the rotated rectangle from cam shifting to a regular rectangle 
+                trackhue = trackface.boundingRect();
             }
         }
         // TODO maybe should still check whether or not a face has been recognized
                          
-	            /*
+	    if (facedetected)
+	    {
 	            // compute the eye area
 	           	// Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
 	            // split it
@@ -434,6 +439,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , NOSE_RECT_COLOR, 2);
 	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), NOSE_RECT_COLOR, 2);
 	            
+	            /*
 	            // create a new region to look for the eyes
 	            Mat mEyeGrayLeft = new Mat();
 	            Mat mEyeRgbaLeft = new Mat();
@@ -484,7 +490,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            	Core.rectangle(mRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 	            }
 	            */
-
+	    }
         return mRgba;
     }
 
