@@ -419,7 +419,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.width < 250 && trackhue.x > 0 && trackhue.x < mGray.width() && trackhue.y > 0 && trackhue.y < mGray.height())
+            if (trackhue.width < (mGray.width()/5))
             {
             	facedetected = false;
             	facelost = true;
@@ -428,102 +428,109 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // if the face is not tracked, we should detect it again
         if(!facedetected) 
         {	
-    		// detect the faces using opencv
-   			mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-        
-            // check if there is a face detected and assign them to the array
-            if (!faces.empty())
-            {
-            	facesArray = faces.toArray();  
-            	facedetected = true;
-            	facelost = false;
-            	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-            
-                // When face is detected, start tracking it using camshifting
-                cs.create_tracked_object(mRgba,facesArray,cs);
-                // track the face in the new frame
-                trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
-                // Convert the rotated rectangle from cam shifting to a regular rectangle 
-                trackhue = trackface.boundingRect();
-            }
-        }   
-       
-	    if (facedetected)
-	    {
-	    	
-	            // compute the eye area
-	           	//Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
-	            // split it
-	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
-	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 + (trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
-	            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
-	            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , DEBUG_RECT_COLOR, 2);
-	            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), DEBUG_RECT_COLOR, 2);
-	            
-	            /*
-	            mEyeGrayLeft = mGray.adjustROI((eyearea_left.y - eyearea_left.height), eyearea_left.y, eyearea_left.x, (eyearea_left.x + eyearea_left.width));
-	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
-	            eyeleftArray = lefteye.toArray();
-	            for (int j = 0; j < eyeleftArray.length; j++){
-	            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
-	            }
-	            */
-	            
-	            /*
-	            mEyeGrayLeft = mGray.submat(eyearea_left);
-	            mEyeRgbaLeft = mRgba.submat(eyearea_left);
-	            mEyeGrayRight = mGray.submat(eyearea_right);
-	            mEyeRgbaRight = mRgba.submat(eyearea_right);
-	            
-	            // Java detector performs betters, detect eyes
-	            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
-	            mEyeDetector.detectMultiScale(mEyeGrayRight, righteye, 1.1,2,2,new Size(), new Size());
-	            
-	            // transform to arrays and print the eyes
-	            eyeleftArray = lefteye.toArray();
-	            eyerightArray = righteye.toArray();
-	            for (int j = 0; j < eyeleftArray.length; j++){
-	            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
-	            }
-	            for (int j = 0; j < eyerightArray.length; j++){
-	            	Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
-	            }	            
-	            
-	            
-	            // compute the mouth area
-		        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/3.0));
-		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
-	            
-		        mMouthGray = mGray.submat(moutharea);
-	            mMouthRgba = mRgba.submat(moutharea);
-	            
-	            mMouthDetector.detectMultiScale(mMouthGray, mouths, 1.1, 2, 2, new Size(), new Size());
-	        	//mNativeDetectormouth.detect(mGray, mouths);
-	        	mouthsArray = mouths.toArray();
-	            for (int j = 0; j < mouthsArray.length; j++)
+        	
+	    		// detect the faces using opencv
+	   			mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+	        
+	            // check if there is a face detected and assign them to the array
+	            if (!faces.empty())
 	            {
-	            	Core.rectangle(mMouthRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
-	            }
-	           
-		        
-		        /*
-		        // compute the nose area
-		        Rect nosearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/4,(int)( trackhue.height/3.5));
-		        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
+	            	facesArray = faces.toArray();  
+	            	facedetected = true;
+	            	facelost = false;
+	            	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
 	            
-		        mNoseGray = mGray.submat(nosearea);
-		        mNoseRgba = mRgba.submat(nosearea);
-		        mNoseDetector.detectMultiScale(mNoseGray, noses, 1.1,2,2,new Size(), new Size());
-	            
-	        	//mNativeDetectornose.detect(mGray, noses);
-	        	nosesArray = noses.toArray();
-	            for (int j = 0; j < nosesArray.length; j++)
-	            {
-	            	Core.rectangle(mNoseRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
+	                // When face is detected, start tracking it using camshifting
+	                cs.create_tracked_object(mRgba,facesArray,cs);
+	                // track the face in the new frame
+	                trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
+	                // Convert the rotated rectangle from cam shifting to a regular rectangle 
+	                trackhue = trackface.boundingRect();
 	            }
-	            */
-	      
-	    }
+	        }   
+	       
+		    if (facedetected)
+		    {
+		    	//if(trackhue.x > 0 && trackhue.y > 0)
+		    	if (trackhue.width > 0 && trackhue.height > 0)
+	        	{
+		    	
+		            // compute the eye area
+		           	//Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
+		            // split it
+		            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/4));
+		            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 + (trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/4));
+		            // draw the area - mGray is working grayscale mat, if you want to see area in rgb preview, change mGray to mRgba
+		            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , DEBUG_RECT_COLOR, 2);
+		            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), DEBUG_RECT_COLOR, 2);
+		            
+		            /*
+		            mEyeGrayLeft = mGray.adjustROI((eyearea_left.y - eyearea_left.height), eyearea_left.y, eyearea_left.x, (eyearea_left.x + eyearea_left.width));
+		            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
+		            eyeleftArray = lefteye.toArray();
+		            for (int j = 0; j < eyeleftArray.length; j++){
+		            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
+		            }
+		            */
+		            
+		            mEyeGrayLeft = mGray.submat(eyearea_left);
+		            mEyeRgbaLeft = mRgba.submat(eyearea_left);
+		            mEyeGrayRight = mGray.submat(eyearea_right);
+		            mEyeRgbaRight = mRgba.submat(eyearea_right);
+		            
+		            // Java detector performs betters, detect eyes
+		            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
+		            mEyeDetector.detectMultiScale(mEyeGrayRight, righteye, 1.1,2,2,new Size(), new Size());
+		            
+		            // transform to arrays and print the eyes
+		            eyeleftArray = lefteye.toArray();
+		            eyerightArray = righteye.toArray();
+		            for (int j = 0; j < eyeleftArray.length; j++){
+		            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
+		            }
+		            for (int j = 0; j < eyerightArray.length; j++){
+		            	Core.rectangle(mEyeRgbaRight, eyerightArray[0].tl(), eyerightArray[0].br(), EYES_RECT_COLOR, 3);
+		            }	            
+		            
+		            
+		            // compute the mouth area
+			        Rect moutharea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/8,(int)( trackhue.height/3.0));
+			        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
+		            
+			        mMouthGray = mGray.submat(moutharea);
+		            mMouthRgba = mRgba.submat(moutharea);
+		            
+		            mMouthDetector.detectMultiScale(mMouthGray, mouths, 1.1, 3, 2, new Size(), new Size());
+		        	//mNativeDetectormouth.detect(mGray, mouths);
+		        	mouthsArray = mouths.toArray();
+		            //for (int j = 0; j < mouthsArray.length; j++)
+		            //{
+		            //	Core.rectangle(mMouthRgba, mouthsArray[j].tl(), mouthsArray[j].br(), MOUTH_RECT_COLOR, 3);            	
+		            //}
+		        	if (mouthsArray.length > 0)
+		        	{
+		        		Core.rectangle(mMouthRgba, mouthsArray[0].tl(), mouthsArray[0].br(), MOUTH_RECT_COLOR, 3);            	
+		        	}
+		           
+			        
+			        /*
+			        // compute the nose area
+			        Rect nosearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + trackhue.height/2),trackhue.width - trackhue.width/4,(int)( trackhue.height/3.5));
+			        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), DEBUG_RECT_COLOR, 2);
+		            
+			        mNoseGray = mGray.submat(nosearea);
+			        mNoseRgba = mRgba.submat(nosearea);
+			        mNoseDetector.detectMultiScale(mNoseGray, noses, 1.1,2,2,new Size(), new Size());
+		            
+		        	//mNativeDetectornose.detect(mGray, noses);
+		        	nosesArray = noses.toArray();
+		            for (int j = 0; j < nosesArray.length; j++)
+		            {
+		            	Core.rectangle(mNoseRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
+		            }
+		            */
+	        	}	      
+		    }
         return mRgba;
     }
 
