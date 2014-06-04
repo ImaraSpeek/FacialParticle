@@ -419,17 +419,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
             
             // check whether the face is still a valid detection, else check again
-            if (trackhue.width < 200 && trackhue.x > 0 && trackhue.x < mGray.width() && trackhue.y > 0 && trackhue.y < mGray.height())
+            if (trackhue.width < 250 && trackhue.x > 0 && trackhue.x < mGray.width() && trackhue.y > 0 && trackhue.y < mGray.height())
             {
             	facedetected = false;
             	facelost = true;
             }
         }
         // if the face is not tracked, we should detect it again
-        else
+        if(!facedetected) 
         {	
     		// detect the faces using opencv
-   			mFaceDetector.detectMultiScale(mGray, faces, 1.1,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+   			mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
         
             // check if there is a face detected and assign them to the array
             if (!faces.empty())
@@ -446,12 +446,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                 // Convert the rotated rectangle from cam shifting to a regular rectangle 
                 trackhue = trackface.boundingRect();
             }
-        }                
+        }   
+       
 	    if (facedetected)
 	    {
 	    	
 	            // compute the eye area
-	           	// Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
+	           	//Rect eyearea = new Rect(trackhue.x +trackhue.width/8,(int)(trackhue.y + (trackhue.height/4.5)),trackhue.width - trackhue.width/8,(int)( trackhue.height/2.0));
 	            // split it
 	            Rect eyearea_right = new Rect(trackhue.x +trackhue.width/16,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
 	            Rect eyearea_left = new Rect(trackhue.x +trackhue.width/16 + (trackhue.width - 2*trackhue.width/16)/2,(int)(trackhue.y + (trackhue.height/4.5)),(trackhue.width - trackhue.width/16)/2,(int)( trackhue.height/3));
@@ -468,6 +469,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	            }
 	            */
 	            
+	            /*
 	            mEyeGrayLeft = mGray.submat(eyearea_left);
 	            mEyeRgbaLeft = mRgba.submat(eyearea_left);
 	            mEyeGrayRight = mGray.submat(eyearea_right);
