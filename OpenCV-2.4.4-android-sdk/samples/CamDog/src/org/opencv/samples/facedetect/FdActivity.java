@@ -12,6 +12,7 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Point;
@@ -23,6 +24,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
+import org.opencv.objdetect.Objdetect;
 
 import android.app.Activity;
 import android.content.Context;
@@ -70,12 +72,20 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat                    mRgba;
     private Mat                    mGray;
     
+    private Mat                    mResult;
+    private Mat					   templateR;
+    private Mat					   templateL;
+    
     private File                   mCascadeFile;
+    
     
     // Native detector and java detector
     private DetectionBasedTracker  mNativeDetector;
-    private CascadeClassifier      mFaceDetector;
     
+    // Cascade classifier files
+    private CascadeClassifier      mFaceDetector;
+    private CascadeClassifier	   mCascadeER;
+    private CascadeClassifier	   mCascadeEL;
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
@@ -90,8 +100,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // for tracking the face
     CamShifting cs;
     CamShifting cseyes;
+    
+    private static final int TM_SQDIFF 			= 0;
+    private static final int TM_SQDIFF_NORMED 	= 1;
+    private static final int TM_CCOEFF			= 2;
+    private static final int TM_CCOEFF_NORMED 	= 3;
+    private static final int TM_CCORR 			= 4;
+    private static final int TM_CCORR_NORMED 	= 5;
+    
+    public static int		 method				= 1;
 
-    private long				   starttime = 0;
+    private long				    starttime = 0;
+    private int						learn_frames = 0;
+    private double					match_value;
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -121,16 +142,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         is.close();
                         os.close();
-
-                        // This part is for the java cascade classifier 
-                        mFaceDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mFaceDetector.empty()) {
-                            Log.e(TAG, "Failed to load Face cascade classifier");
-                            mFaceDetector = null;
-                        } else
-                        {
-                            Log.i(TAG, "Loaded Face cascade classifier from " + mCascadeFile.getAbsolutePath());
-                        }
                         
                         // create the native detector for opencv
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
@@ -142,42 +153,43 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
                     
-                    /*
+                    // Load left eye classifier
                     try {
                         // load cascade file from application resources
-                        InputStream iseye = getResources().openRawResource(R.raw.haarcascade_eye);
-                        File cascadeDireye = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFileeye = new File(cascadeDireye, "haarcascade_eye.xml");
-                        FileOutputStream oseye = new FileOutputStream(mCascadeFileeye);
+                        InputStream isEL = getResources().openRawResource(R.raw.haarcascade_eye);
+                        File cascadeDirEL = getDir("cascade", Context.MODE_PRIVATE);
+                        File mCascadeFileEL = new File(cascadeDirEL, "haarcascade_eye.xml");
+                        FileOutputStream osEL = new FileOutputStream(mCascadeFileEL);
 
-                        byte[] buffereye = new byte[4096];
-                        int bytesReadeye;
-                        while ((bytesReadeye = iseye.read(buffereye)) != -1) {
-                            oseye.write(buffereye, 0, bytesReadeye);
+                        byte[] bufferEL = new byte[4096];
+                        int bytesReadEL;
+                        while ((bytesReadEL = isEL.read(bufferEL)) != -1) {
+                            osEL.write(bufferEL, 0, bytesReadEL);
                         }
-                        iseye.close();
-                        oseye.close();
+                        isEL.close();
+                        osEL.close();
                         
                         // This part is for the java cascade classifier to search within region
-                        mEyeDetector = new CascadeClassifier(mCascadeFileeye.getAbsolutePath());
-                        if (mEyeDetector.empty()) {
+                        mCascadeEL = new CascadeClassifier(mCascadeFileEL.getAbsolutePath());
+                        if (mCascadeEL.empty()) {
                             Log.e(TAG, "Failed to load eye cascade classifier");
-                            mEyeDetector = null;
+                            mCascadeEL = null;
                         } else
                         {
-                            Log.i(TAG, "Loaded eye cascade classifier from " + mCascadeFileeye.getAbsolutePath());
+                            Log.i(TAG, "Loaded EL cascade classifier from " + mCascadeFileEL.getAbsolutePath());
                         }
 
                         // create detector for the eyes
                         //mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
 
-                        cascadeDireye.delete();
+                        cascadeDirEL.delete();
 
                     } catch (IOException e) {
                         e.printStackTrace();
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
                     
+                    /*                    
                     try {
                         // load cascade file from application resources
                         InputStream ismouth = getResources().openRawResource(R.raw.haarcascade_mcs_mouth);
@@ -338,7 +350,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	
     	// detect the faces using opencv
     	mNativeDetector.detect(mGray, faces);
-   		
     	// take the most important face
         facesArray = faces.toArray();
         //Log.i("info", "faces to array length " + facesArray.length);
@@ -359,6 +370,22 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
 	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
             
+	        // learn the template for the eyes
+	        if(learn_frames<5)
+	        {
+	        	templateL = get_template(mCascadeEL,eyearea_left,24);
+             	//templateR = get_template(mCascadeER,eyearea_right,24);
+             	learn_frames++;
+            }
+	        else
+	        {
+	        	match_value = match_eye(eyearea_left,templateL,FdActivity.method); 
+	        	//match_value = match_eye(eyearea_right,templateR,FdActivity.method); 
+	        }
+
+	        //Imgproc.resize(mRgba.submat(eyearea_left), mZoomWindow2, mZoomWindow2.size());
+            //Imgproc.resize(mRgba.submat(eyearea_right), mZoomWindow, mZoomWindow.size());
+	        
         }
         
         
@@ -499,6 +526,89 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		    */
         return mRgba;
     }
+    
+    private double  match_eye(Rect area, Mat mTemplate,int type){
+		  Point matchLoc; 
+		  Mat mROI = mGray.submat(area);
+	      int result_cols =  mGray.cols() - mTemplate.cols() + 1;
+		  int result_rows = mGray.rows() - mTemplate.rows() + 1;
+		  if(mTemplate.cols()==0 ||mTemplate.rows()==0){
+			  return 0.0;
+		  }
+		  mResult = new Mat(result_cols,result_rows, CvType.CV_32FC1);
+		  
+		  switch (type){
+			  case TM_SQDIFF:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_SQDIFF) ; 
+				  break;
+			  case TM_SQDIFF_NORMED:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_SQDIFF_NORMED) ; 
+				  break;
+			  case TM_CCOEFF:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_CCOEFF) ; 
+				  break;
+			  case TM_CCOEFF_NORMED:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_CCOEFF_NORMED) ; 
+				  break;
+			  case TM_CCORR:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_CCORR) ; 
+				  break;
+			  case TM_CCORR_NORMED:
+				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_CCORR_NORMED) ; 
+				  break;
+		  }
+		  
+		  Core.MinMaxLocResult mmres =  Core.minMaxLoc(mResult);
+		  
+		  if(type == TM_SQDIFF || type == TM_SQDIFF_NORMED)
+		  	{ matchLoc = mmres.minLoc; }
+		  else
+		    { matchLoc = mmres.maxLoc; }
+		  
+		  Point  matchLoc_tx = new Point(matchLoc.x+area.x,matchLoc.y+area.y);
+		  Point  matchLoc_ty = new Point(matchLoc.x + mTemplate.cols() + area.x , matchLoc.y + mTemplate.rows()+area.y );
+		 
+		  Core.rectangle(mRgba, matchLoc_tx,matchLoc_ty, new Scalar(255, 255, 0, 255));
+		 
+		  if(type == TM_SQDIFF || type == TM_SQDIFF_NORMED)
+		  	{ return mmres.maxVal; }
+		  else
+		    { return mmres.minVal; }
+
+	    }
+    
+    // get template for the pupils
+    private Mat  get_template(CascadeClassifier clasificator, Rect area,int size){
+    	Mat template = new Mat();
+    	Mat mROI = mGray.submat(area);
+    	MatOfRect eyes = new MatOfRect();
+    	Point iris = new Point();
+    	Rect eye_template = new Rect();
+    	clasificator.detectMultiScale(mROI, eyes, 1.15, 2,Objdetect.CASCADE_FIND_BIGGEST_OBJECT|Objdetect.CASCADE_SCALE_IMAGE, new Size(30,30),new Size());
+    	 
+    	Rect[] eyesArray = eyes.toArray();
+    	for (int i = 0; i < eyesArray.length; i++){
+    	Rect e = eyesArray[i];
+    	e.x = area.x + e.x;
+    	e.y = area.y + e.y;
+    	Rect eye_only_rectangle = new Rect((int)e.tl().x,(int)( e.tl().y + e.height*0.4),(int)e.width,(int)(e.height*0.6));
+    	// reduce ROI
+    	mROI = mGray.submat(eye_only_rectangle);
+    	Mat vyrez = mRgba.submat(eye_only_rectangle);
+    	// find the darkness point
+    	Core.MinMaxLocResult mmG = Core.minMaxLoc(mROI);
+    	// draw point to visualise pupil
+    	Core.circle(vyrez, mmG.minLoc,2, new Scalar(255, 255, 255, 255),2);
+    	iris.x = mmG.minLoc.x + eye_only_rectangle.x;
+    	iris.y = mmG.minLoc.y + eye_only_rectangle.y;
+    	eye_template = new Rect((int)iris.x-size/2,(int)iris.y-size/2 ,size,size);
+    	Core.rectangle(mRgba,eye_template.tl(),eye_template.br(),new Scalar(255, 0, 0, 255), 2);
+    	// copy area to template
+    	template = (mGray.submat(eye_template)).clone();
+    	return template;
+    	}
+    	return template;
+    	}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
