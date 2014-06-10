@@ -46,7 +46,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 0, 255);
+    private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 255);
+    private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
     
@@ -340,7 +341,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
    		
     	// take the most important face
         facesArray = faces.toArray();
-        Log.i("info", "faces to array length " + facesArray.length);
+        //Log.i("info", "faces to array length " + facesArray.length);
         if (facesArray.length > 0)
         {
         	// color the faces
@@ -353,12 +354,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             // draw rectangles for debugging
             Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , EYES_RECT_COLOR, 2);
             Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), EYES_RECT_COLOR, 2);
+            
+            // compute the mouth area
+	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/2), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
+	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
+            
         }
         
         
-        
-        
-        
+       
         //RotatedRect trackeyes = null;
         //RotatedRect trackface = null;
 /* 
