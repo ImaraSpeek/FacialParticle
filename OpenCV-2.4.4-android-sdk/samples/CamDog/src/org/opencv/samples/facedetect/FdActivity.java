@@ -430,7 +430,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         {	
         	
 	    		// detect the faces using opencv
-	   			mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+        		mNativeDetector.detect(mGray, faces);
+	   			//mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
 	        
 	            // check if there is a face detected and assign them to the array
 	            if (!faces.empty())
