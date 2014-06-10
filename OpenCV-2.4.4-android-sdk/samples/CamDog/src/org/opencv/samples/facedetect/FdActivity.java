@@ -178,11 +178,41 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         {
                             Log.i(TAG, "Loaded EL cascade classifier from " + mCascadeFileEL.getAbsolutePath());
                         }
-
-                        // create detector for the eyes
-                        //mNativeDetectoreye = new DetectionBasedTracker(mCascadeFileeye.getAbsolutePath(), 0);
-
+                        
                         cascadeDirEL.delete();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+                    }
+                    
+                    // Load right eye classifier
+                    try {
+                        // load cascade file from application resources
+                        InputStream isER = getResources().openRawResource(R.raw.haarcascade_eye);
+                        File cascadeDirER = getDir("cascade", Context.MODE_PRIVATE);
+                        File mCascadeFileER = new File(cascadeDirER, "haarcascade_eye.xml");
+                        FileOutputStream osER = new FileOutputStream(mCascadeFileER);
+
+                        byte[] bufferER = new byte[4096];
+                        int bytesReadER;
+                        while ((bytesReadER = isER.read(bufferER)) != -1) {
+                            osER.write(bufferER, 0, bytesReadER);
+                        }
+                        isER.close();
+                        osER.close();
+                        
+                        // This part is for the java cascade classifier to search within region
+                        mCascadeER = new CascadeClassifier(mCascadeFileER.getAbsolutePath());
+                        if (mCascadeER.empty()) {
+                            Log.e(TAG, "Failed to load eye cascade classifier");
+                            mCascadeER = null;
+                        } else
+                        {
+                            Log.i(TAG, "Loaded ER cascade classifier from " + mCascadeFileER.getAbsolutePath());
+                        }
+                        
+                        cascadeDirER.delete();
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -374,18 +404,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        if(learn_frames<5)
 	        {
 	        	templateL = get_template(mCascadeEL,eyearea_left,24);
-             	//templateR = get_template(mCascadeER,eyearea_right,24);
+             	templateR = get_template(mCascadeER,eyearea_right,24);
              	learn_frames++;
             }
 	        else
 	        {
 	        	match_value = match_eye(eyearea_left,templateL,FdActivity.method); 
-	        	//match_value = match_eye(eyearea_right,templateR,FdActivity.method); 
+	        	match_value = match_eye(eyearea_right,templateR,FdActivity.method); 
 	        }
-
-	        //Imgproc.resize(mRgba.submat(eyearea_left), mZoomWindow2, mZoomWindow2.size());
-            //Imgproc.resize(mRgba.submat(eyearea_right), mZoomWindow, mZoomWindow.size());
-	        
         }
         
         
