@@ -46,6 +46,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
+    private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 0, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
     
@@ -335,57 +336,32 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         
     	
     	// detect the faces using opencv
-    	//mNativeDetector.detect(mGray, faces);
-   		mFaceDetector.detectMultiScale(mGray, faces, 1.5,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-    	
+    	mNativeDetector.detect(mGray, faces);
+   		
+    	// take the most important face
         facesArray = faces.toArray();
-        for (int j = 0; j < facesArray.length; j++){
-        	Core.rectangle(mRgba, facesArray[j].tl(), facesArray[j].br(), FACE_RECT_COLOR, 3);
+        Log.i("info", "faces to array length " + facesArray.length);
+        if (facesArray.length > 0)
+        {
+        	// color the faces
+        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+        	
+        	// draw the area for the eyes
+        	Rect eyearea_left = new Rect(facesArray[0].x + facesArray[0].width/16 + (facesArray[0].width - 2 * facesArray[0].width/16)/2,(int)(facesArray[0].y + ( facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)(facesArray[0].height/3.5));
+            Rect eyearea_right = new Rect(facesArray[0].x + facesArray[0].width/16,(int)(facesArray[0].y + (facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)( facesArray[0].height/3.5));
+        	
+            // draw rectangles for debugging
+            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , EYES_RECT_COLOR, 2);
+            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), EYES_RECT_COLOR, 2);
         }
-
-
-        /*
-        MatOfRect initfaces = new MatOfRect();
-        MatOfRect faces = new MatOfRect();
-        MatOfRect trackfaces = new MatOfRect();
-        
-        MatOfRect eyes = new MatOfRect();
-        MatOfRect lefteye = new MatOfRect();
-        MatOfRect righteye = new MatOfRect();
-        
-        MatOfRect mouths = new MatOfRect();
-        MatOfRect noses = new MatOfRect();
-        
-        Point leftEye, rightEye;    // Position of the detected eyes.
-        
-        Rect[] facesArray = null;
-        Rect[] eyesArray = null;
-        Rect[] eyeleftArray = null;
-        Rect[] eyerightArray = null;
-        Rect[] mouthsArray = null;
-        Rect[] nosesArray = null;
-        
-        RotatedRect trackeyes = null;
-        RotatedRect trackface = null;
-        
-        // create a new region to look for the eyes
-        Mat mEyeGrayLeft = new Mat();
-        Mat mEyeRgbaLeft = new Mat();
-        Mat mEyeGrayRight = new Mat();
-        Mat mEyeRgbaRight = new Mat();
-        Mat mNoseGray = new Mat();
-        Mat mNoseRgba = new Mat();
-
-        Mat mMouthGray = new Mat();
-        Mat mMouthRgba = new Mat();
         
         
         
-        Mat faceImg = null;
-        int facetoprow, facebottomrow, faceleftcolumn, facerightcolumn;
         
-        Rect trackhue = null;
-
+        
+        //RotatedRect trackeyes = null;
+        //RotatedRect trackface = null;
+/* 
         // If no face has been detected yet, detect the face
         // TODO add a way to falsify more than 1 face
         
