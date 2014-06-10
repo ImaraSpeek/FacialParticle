@@ -257,42 +257,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         e.printStackTrace();
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
-                    
-                    /*
-                    try {
-                        // load cascade file from application resources
-                        InputStream isnose = getResources().openRawResource(R.raw.haarcascade_mcs_nose);
-                        File cascadeDirnose = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFilenose = new File(cascadeDirnose, "haarcascade_mcs_nose.xml");
-                        FileOutputStream osnose = new FileOutputStream(mCascadeFilenose);
-
-                        byte[] buffernose = new byte[4096];
-                        int bytesReadnose;
-                        while ((bytesReadnose = isnose.read(buffernose)) != -1) {
-                            osnose.write(buffernose, 0, bytesReadnose);
-                        }
-                        isnose.close();
-                        osnose.close();
-                        
-                        // This part is for the java cascade classifier to search within region
-                        mNoseDetector = new CascadeClassifier(mCascadeFilenose.getAbsolutePath());
-                        if (mNoseDetector.empty()) {
-                            Log.e(TAG, "Failed to load nose cascade classifier");
-                            mNoseDetector = null;
-                        } else
-                        {
-                            Log.i(TAG, "Loaded nose cascade classifier from " + mCascadeFilenose.getAbsolutePath());
-                        }
-
-                        //mNativeDetectornose = new DetectionBasedTracker(mCascadeFilenose.getAbsolutePath(), 0);
-
-                        cascadeDirnose.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-                    */
 
                     // enable the opencv camera
                     mOpenCvCameraView.enableView();
@@ -405,7 +369,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
 	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
             
-	        // learn the template for the eyes
+	        // learn the template for the features
 	        if(learn_frames<10)
 	        {
 	        	templateL = get_template(mCascadeEL,eyearea_left,24);
@@ -430,60 +394,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	
 	        }
         }
-        
-        
-       
-        //RotatedRect trackeyes = null;
-        //RotatedRect trackface = null;
-/* 
-        // If no face has been detected yet, detect the face
-        // TODO add a way to falsify more than 1 face
-        
-        // if a face has already been detected, we should track that face until it is lost
-        if (facedetected)
-        {
-            // track the face in the new frame
-            trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
-            // Convert the rotated rectangle from cam shifting to a regular rectangle 
-            trackhue = trackface.boundingRect();
-            //outline face with rectangle
-        	Core.rectangle(mRgba, trackhue.tl(), trackhue.br(), HUE_RECT_COLOR, 3);	           
-            //outline the tracked eclipse
-            Core.ellipse(mRgba, trackface, NOSE_RECT_COLOR, 3);
-            
-            // check whether the face is still a valid detection, else check again
-            if (trackhue.width < (mGray.width()/5))
-            {
-            	facedetected = false;
-            	facelost = true;
-            }
-        }
-        // if the face is not tracked, we should detect it again
-        if(!facedetected) 
-        {	
-        	
-	    		// detect the faces using opencv
-        		mNativeDetector.detect(mGray, faces);
-	   			//mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
-	        
-	            // check if there is a face detected and assign them to the array
-	            if (!faces.empty())
-	            {
-	            	facesArray = faces.toArray();  
-	            	facedetected = true;
-	            	facelost = false;
-	            	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-	            
-	                // When face is detected, start tracking it using camshifting
-	                cs.create_tracked_object(mRgba,facesArray,cs);
-	                // track the face in the new frame
-	                trackface = cs.camshift_track_face(mRgba, facesArray, cs);            
-	                // Convert the rotated rectangle from cam shifting to a regular rectangle 
-	                trackhue = trackface.boundingRect();
-		            
-	        	}	      
-		    }
-		    */
         return mRgba;
     }
     
