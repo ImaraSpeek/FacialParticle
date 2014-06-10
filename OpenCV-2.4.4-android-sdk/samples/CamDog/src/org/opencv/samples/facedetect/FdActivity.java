@@ -112,12 +112,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     public static int		 method				= 1;
     
-    Point left_pupil = null;
-	Point right_pupil = null;
+    Point left_pupil 	= null;
+	Point right_pupil 	= null;
+	Point lips 			= null;
 
     private long				    starttime = 0;
     private int						learn_frames = 0;
-    private double					match_valuel, match_valuer;
+    private double					match_valuel, match_valuer, match_valuem;
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -416,9 +417,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
 	        else
 	        {
-	        	// match_value is the cenrtainty that it is the pupil
+	        	// match_value is the certainty that it is the pupil
 	        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
 	        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
+	        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
 	        	
 	        	// TODO find out why match_valuer stays 1.0
 	        	// Log.i("distance", "match left: " + match_valuel + "matchvalue right: " + match_valuer);
