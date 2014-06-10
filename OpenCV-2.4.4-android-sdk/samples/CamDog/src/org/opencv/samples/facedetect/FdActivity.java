@@ -46,14 +46,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    private static final Scalar    HUE_RECT_COLOR      = new Scalar(0, 100, 0, 255);
-    private static final Scalar    EYES_RECT_COLOR     = new Scalar(255, 0, 255, 0);
-    private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(0, 0, 255, 0);
-    private static final Scalar    NOSE_RECT_COLOR    = new Scalar(255, 0, 0, 0);
-    private static final Scalar    DEBUG_RECT_COLOR    = new Scalar(255, 255, 255, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
     
+    /*
     public static File working_Dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/opencv");
     static File fileC;
     static {
@@ -62,6 +58,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     }
 	public static boolean pictureTaken,recognized;
+	*/
 
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
@@ -70,22 +67,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private Mat					   mRgbaScale;
-    private Mat					   mGrayScale;
-    private Mat					   mFace;
     
     private File                   mCascadeFile;
-    private File				   mCascadeFileeye;
-    private File				   mCascadeFilemouth;
-    private File				   mCascadeFilenose;
     
+    // Native detector and java detector
     private DetectionBasedTracker  mNativeDetector;
-    private DetectionBasedTracker  mNativeDetectoreye;
-    private DetectionBasedTracker  mNativeDetectormouth;
-    private DetectionBasedTracker  mNativeDetectornose;
-    private DetectionBasedTracker  mRecognizer;
-    
-    private CascadeClassifier      mFaceDetector, mEyeDetector, mMouthDetector, mNoseDetector;
+    private CascadeClassifier      mFaceDetector;
     
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
@@ -95,21 +82,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
 
+    // Native library for the camera
     private CameraBridgeViewBase   mOpenCvCameraView;
     
     // for tracking the face
     CamShifting cs;
     CamShifting cseyes;
-        
-    private boolean				   facedetected = false;
-    private boolean				   facelost = false;
-    private boolean				   eyesdetected = false;
-    private boolean				   eyeslost = false;
-    
-    private long				   starttime = 0;
-    Bitmap bmp;
-    private static int		 	   SCALE = 2;
 
+    private long				   starttime = 0;
+    
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -123,7 +104,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
                     try {
                     	// initialize new camshift
-                    	cs = new CamShifting();                    	
+                    	//cs = new CamShifting();                    	
                     	
                         // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
                         InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
@@ -159,7 +140,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
                     
-                    
+                    /*
                     try {
                         // load cascade file from application resources
                         InputStream iseye = getResources().openRawResource(R.raw.haarcascade_eye);
@@ -262,7 +243,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         e.printStackTrace();
                         Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
                     }
+                    */
 
+                    // enable the opencv camera
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
@@ -287,7 +270,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public FdActivity() {
         mDetectorName = new String[2];
         mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
-
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -327,15 +309,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
         mRgba = new Mat();
-        mGrayScale = new Mat();
-        mRgbaScale = new Mat();
     }
 
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
-        mGrayScale.release();
-        mRgbaScale.release();
     }
        
 
@@ -344,15 +322,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         
-        // new scale for smaller image
-        Size scaling = new Size(mGray.size().width/SCALE, mGray.size().height/SCALE);
-        //Imgproc.resize(mGray, mGrayScale, scaling);
-        //Imgproc.resize(mRgba, mRgbaScale, scaling);
-        Size backscaling = new Size(mGray.size().width, mGray.size().height);
-        
-        
-        // bmp = Bitmap.createBitmap(mRgba.cols(), mRgba.rows(),Bitmap.Config.ARGB_8888);
-        // Utils.matToBitmap(mRgba, bmp);
+        MatOfRect 	faces = new MatOfRect();
+        Rect[] 		facesArray = null;
 
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -361,7 +332,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
             mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
+        
+    	
+    	// detect the faces using opencv
+    	mNativeDetector.detect(mGray, faces);
+   		//mFaceDetector.detectMultiScale(mGray, faces, 2,2,2,new Size(mAbsoluteFaceSize, mAbsoluteFaceSize), new Size());
+    	
+        facesArray = faces.toArray();
+        for (int j = 0; j < facesArray.length; j++){
+        	Core.rectangle(mRgba, facesArray[j].tl(), facesArray[j].br(), FACE_RECT_COLOR, 3);
+        }
 
+
+        /*
         MatOfRect initfaces = new MatOfRect();
         MatOfRect faces = new MatOfRect();
         MatOfRect trackfaces = new MatOfRect();
@@ -451,6 +434,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        }   
 	       
 		    if (facedetected)
+		    	
 		    {
 		    	//if(trackhue.x > 0 && trackhue.y > 0)
 		    	if (trackhue.width > 0 && trackhue.height > 0)
@@ -465,14 +449,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , DEBUG_RECT_COLOR, 2);
 		            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), DEBUG_RECT_COLOR, 2);
 		            
-		            /*
+		            
 		            mEyeGrayLeft = mGray.adjustROI((eyearea_left.y - eyearea_left.height), eyearea_left.y, eyearea_left.x, (eyearea_left.x + eyearea_left.width));
 		            mEyeDetector.detectMultiScale(mEyeGrayLeft, lefteye, 1.1,2,2,new Size(), new Size());
 		            eyeleftArray = lefteye.toArray();
 		            for (int j = 0; j < eyeleftArray.length; j++){
 		            	Core.rectangle(mEyeRgbaLeft, eyeleftArray[0].tl(), eyeleftArray[0].br(), EYES_RECT_COLOR, 3);
 		            }
-		            */
+		            
 		            
 		            mEyeGrayLeft = mGray.submat(eyearea_left);
 		            mEyeRgbaLeft = mRgba.submat(eyearea_left);
@@ -529,9 +513,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		            {
 		            	Core.rectangle(mNoseRgba, nosesArray[j].tl(), nosesArray[j].br(), NOSE_RECT_COLOR, 3);            	
 		            }
-		            */
+		            
 	        	}	      
 		    }
+		    */
         return mRgba;
     }
 
