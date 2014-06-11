@@ -50,19 +50,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 255);
     private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 255);
+    private static final Scalar    LINE_COLOR    	   = new Scalar(160, 120, 50, 50);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
-    
-    /*
-    public static File working_Dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/opencv");
-    static File fileC;
-    static {
-    	working_Dir.mkdirs();
-    	 fileC = new File(FdActivity.working_Dir,"csv.txt");
-    
-    }
-	public static boolean pictureTaken,recognized;
-	*/
 
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
@@ -78,7 +68,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat					   templateM;
     
     private File                   mCascadeFile;
-    
     
     // Native detector and java detector
     private DetectionBasedTracker  mNativeDetector;
@@ -112,10 +101,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     public static int		 method				= 1;
     
-    Point left_pupil 	= null;
-	Point right_pupil 	= null;
-	Point lips 			= null;
-
     private long				    starttime = 0;
     private int						learn_frames = 0;
     private double					match_valuel, match_valuer, match_valuem;
@@ -381,16 +366,46 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
 	        else
 	        {
+	        	// create points locally to use here
+	        	Point left_pupil = new Point();
+	        	Point right_pupil = new Point();
+	        	Point lips = new Point();
+	        	// Dummy point to calculate distance from eyes to middle lips
+	        	Point middle_pupil = new Point();
+	        	
 	        	// match_value is the certainty that it is the pupil
 	        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
 	        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
 	        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
 	        	
 	        	// TODO find out why match_valuer stays 1.0
-	        	// Log.i("distance", "match left: " + match_valuel + "matchvalue right: " + match_valuer);
+	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
 	        	
 	        	// TODO find the distance between the 2 points
+	        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
+	        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
+	        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
 	        	
+	        	// determine horizontal and vertical distances
+	        	double eyex = Math.abs(left_pupil.x - right_pupil.x);
+	        	double eyey = Math.abs(left_pupil.y - right_pupil.y);
+	        	// determine the x by subtracting half of the width from the farthest x coordinate
+	        	middle_pupil.x = left_pupil.x - (eyex / 2);
+	        	middle_pupil.y = left_pupil.y - (eyey / 2);
+	        	
+	        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR);
+	        	
+	        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
+	        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
+	        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
+
+	        	
+	        	// TODO double check whether or not pythagoras is uncalled for and should just be a straight line
+	        	// pythagoras
+	        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
+	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
+	        	
+	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
 	        	
 	        }
         }
@@ -438,8 +453,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		  Point  matchLoc_tx = new Point(matchLoc.x+area.x,matchLoc.y+area.y);
 		  Point  matchLoc_ty = new Point(matchLoc.x + mTemplate.cols() + area.x , matchLoc.y + mTemplate.rows()+area.y );
 		  
+		  Log.i("distance", pupil_coord.toString() + " matchLoc x: " + matchLoc.x + " matchloc y:" + matchLoc.y + "area x, y: " + area.x + " " + area.y );
+		  
 		  // Save the coordinates in the pupil coordinate reserved
-		  pupil_coord = new Point(matchLoc.x, matchLoc.y);
+		  // These coordinates have to be relative to the face area the mRgba area
+		  pupil_coord.x = matchLoc.x + (mTemplate.cols() / 2) + area.x;
+		  pupil_coord.y = matchLoc.y + (mTemplate.rows() / 2) + area.y;		  
 		 
 		  Core.rectangle(mRgba, matchLoc_tx,matchLoc_ty, new Scalar(255, 255, 0, 255));
 		 
