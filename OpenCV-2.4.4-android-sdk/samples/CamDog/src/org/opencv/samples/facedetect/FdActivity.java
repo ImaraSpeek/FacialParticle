@@ -337,6 +337,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	// take the most important face
         facesArray = faces.toArray();
         //Log.i("info", "faces to array length " + facesArray.length);
+        // TODO sense if more than 1 face and give an error
         if (facesArray.length > 0)
         {
         	// color the faces
@@ -454,7 +455,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		  Point  matchLoc_tx = new Point(matchLoc.x+area.x,matchLoc.y+area.y);
 		  Point  matchLoc_ty = new Point(matchLoc.x + mTemplate.cols() + area.x , matchLoc.y + mTemplate.rows()+area.y );
 		  
-		  Log.i("distance", pupil_coord.toString() + " matchLoc x: " + matchLoc.x + " matchloc y:" + matchLoc.y + "area x, y: " + area.x + " " + area.y );
+		  //Log.i("distance", pupil_coord.toString() + " matchLoc x: " + matchLoc.x + " matchloc y:" + matchLoc.y + "area x, y: " + area.x + " " + area.y );
 		  
 		  // Save the coordinates in the pupil coordinate reserved
 		  // These coordinates have to be relative to the face area the mRgba area
