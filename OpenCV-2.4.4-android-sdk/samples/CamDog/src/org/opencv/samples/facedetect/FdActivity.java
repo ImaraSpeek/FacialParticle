@@ -50,7 +50,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 255);
     private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 255);
-    private static final Scalar    LINE_COLOR    	   = new Scalar(160, 120, 50, 50);
+    private static final Scalar    LINE_COLOR    	   = new Scalar(255, 120, 0, 0);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -393,12 +393,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	middle_pupil.x = left_pupil.x - (eyex / 2);
 	        	middle_pupil.y = left_pupil.y - (eyey / 2);
 	        	
-	        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR);
+	        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
 	        	
 	        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
 	        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
 	        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
 
+	        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
 	        	
 	        	// TODO double check whether or not pythagoras is uncalled for and should just be a straight line
 	        	// pythagoras
