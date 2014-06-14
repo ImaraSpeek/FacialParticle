@@ -1,4 +1,4 @@
-
+package com.watchdog.bayesian;
 import java.util.Comparator;
 
 

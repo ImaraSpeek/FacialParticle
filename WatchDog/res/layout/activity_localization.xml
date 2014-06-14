@@ -5,9 +5,27 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/btnGenData"
+        android:id="@+id/btnCollectData"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Generate data" />
+        android:text="Collect data" />
+
+    <Button
+        android:id="@+id/btnAnalyzeData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Analyze data" />
+
+    <Button
+        android:id="@+id/btnDetermineLoc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Determine location" />
+
+    <TextView
+        android:id="@+id/txtLocs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="" />
 
 </LinearLayout>

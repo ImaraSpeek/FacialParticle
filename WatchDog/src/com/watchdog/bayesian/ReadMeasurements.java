@@ -1,6 +1,7 @@
-
+package com.watchdog.bayesian;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.TreeMap;
 
 public class ReadMeasurements {
 	
-	public static List<Measurement> read(String pathToCSV) {
+	public static List<Measurement> read(File pathToCSV) {
 		BufferedReader br = null;
 		String line = "";
 		String cvsSplitBy = ",";
@@ -26,8 +27,6 @@ public class ReadMeasurements {
 	 
 			br = new BufferedReader(new FileReader(pathToCSV));
 			while ((line = br.readLine()) != null) {
-	 
-			        // use comma as separator
 				String[] split = line.split(cvsSplitBy);
 	 
 				Measurement m = new Measurement();
