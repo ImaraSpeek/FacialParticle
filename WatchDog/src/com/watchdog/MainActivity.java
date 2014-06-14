@@ -19,6 +19,7 @@ public class MainActivity extends Activity {
 	// Controls
 	private Button btnLock;
 	private TextView lblState;
+	private Button btnLoc;
 	
 	// Receivers
 	BroadcastReceiver stateChangedReceiver;
@@ -36,6 +37,15 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Intent lockIntent = new Intent(MainActivity.this, LockedService.class);
 				startService(lockIntent);
+			}
+		});
+		
+		btnLoc = (Button) findViewById(R.id.btnLoc);
+		btnLoc.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent locIntent = new Intent(MainActivity.this, LocalizationActivity.class);
+				startActivity(locIntent);
 			}
 		});
 		
