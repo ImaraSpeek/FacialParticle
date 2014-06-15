@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">CamDog</string>
     <string name="buttonimage">Take Image</string>
+    <string name="detect_button">Detect my face</string>
+    <string name="learn_button">Learn my face</string>
 </resources>
