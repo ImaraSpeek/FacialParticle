@@ -148,6 +148,8 @@ public class LocalizationActivity extends Activity {
 			// Create the JSON arr
 			JSONArray data = new JSONArray();
 			
+			String loc = "";
+			
 			File root = Environment.getExternalStorageDirectory();
 			File ms = new File(root, "WatchDog/Measurements/");
 			for (File f : ms.listFiles()) {
@@ -186,6 +188,12 @@ public class LocalizationActivity extends Activity {
 				pw.flush();
 				pw.close();
 				w.close();
+				
+				List<String> locations = FindLocation.getLocations(data);
+				for (String l : locations) {
+					loc += l + "\n";
+				}
+				txtLocs.setText(loc);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -244,14 +252,14 @@ public class LocalizationActivity extends Activity {
 			
 			double[] posterior = null;
 			try {
-				posterior = FindLocation.findLocation(scanResults, 5, prior, data, locations);
+				posterior = FindLocation.findLocation(scanResults, 20, prior, data, locations);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			
 			String loc = "";
 			for (int i=0; i<posterior.length; i++) {
-				loc += locations.get(i) + ": " + posterior[i] + "\n";
+				loc += locations.get(i).replace(".csv", "") + ": " + posterior[i] + "\n";
 				Log.i("WatchDog", i+" "+posterior[i]);
 			}
 			txtLocs.setText(loc);

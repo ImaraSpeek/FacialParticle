@@ -18,7 +18,7 @@ public class FindLocation {
 		Collections.sort(results, new Comparator<ScanResult>() {
 	        @Override
 	        public int compare(ScanResult lhs, ScanResult rhs) {
-	            return (lhs.level <rhs.level ? -1 : (lhs.level==rhs.level ? 0 : 1));
+	            return (lhs.level > rhs.level ? -1 : (lhs.level==rhs.level ? 0 : 1));
 	        }
 	    });
 		return results;
@@ -40,8 +40,10 @@ public class FindLocation {
 		orderScanResults(scanResults);
 		int max = noAPs;
 		int it = 0;
+		double threshold = 0.95;
 		
 		for (ScanResult r : scanResults) {
+			Log.i("WatchDog", "AP " + r.BSSID + "(" + r.SSID + ")");
 			if (it==max) break;
 			it++;
 			
@@ -54,18 +56,39 @@ public class FindLocation {
 						mean = data.getJSONObject(j).getDouble("mean");
 						dev = data.getJSONObject(j).getDouble("deviation");
 						if (dev == 0) {
-							dev = 0.005;
+							dev = 0.5;
 						}
 						break;
 					}
 				}
 				
-				posterior[i] = posterior[i] * normal(r.level, mean, dev);
+				
+				double prob = 0; 
+				if (mean == 0 && dev == 0) {
+					Log.i("WatchDog", "AP " + r.BSSID + "(" + r.SSID + ") not in training data");
+				} else {
+					prob = normal(r.level, mean, dev);
+				}
+				Log.i("WatchDog", posterior[i] + ",lv="+r.level+",m="+mean+",d="+dev+",ans="+prob);
+				
+				posterior[i] = posterior[i] * prob;
 				sum += posterior[i];
 			}
 			// Normalize
+			boolean thresholdpassed = false;
 			for (int i=0; i<posterior.length; i++) {
-				posterior[i] = posterior[i] / sum;
+				if (sum == 0) {
+					posterior[i] = 1.0/posterior.length;
+				}
+				else {
+					posterior[i] = posterior[i] / sum;
+				}
+				if (posterior[i] >= 0.95) {
+					thresholdpassed = true;
+				}
+			}
+			if (thresholdpassed) {
+				break;
 			}
 			
 		}
