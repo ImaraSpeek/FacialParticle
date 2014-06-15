@@ -356,7 +356,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
             
 	        // learn the template for the features
-	        if(learn_frames<10)
+	        if(learn_frames<5)
 	        {
 	        	templateL = get_template(mCascadeEL,eyearea_left,24);
              	templateR = get_template(mCascadeER,eyearea_right,24);
@@ -364,6 +364,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              	templateM = get_templateMouth(mCascadeM, moutharea,24);
              	
              	learn_frames++;
+             	// TODO make sure that templates are correct
             }
 	        else
 	        {
@@ -379,10 +380,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
 	        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
 	        	
-	        	// TODO find out why match_valuer stays 1.0
 	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
-	        	
-	        	// TODO find the distance between the 2 points
+
 	        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
 	        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
 	        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
@@ -402,7 +401,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
 	        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
 	        	
-	        	// TODO double check whether or not pythagoras is uncalled for and should just be a straight line
 	        	// pythagoras
 	        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
 	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
