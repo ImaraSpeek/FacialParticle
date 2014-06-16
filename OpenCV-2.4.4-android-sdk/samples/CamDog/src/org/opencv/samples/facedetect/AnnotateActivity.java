@@ -76,6 +76,7 @@ public class AnnotateActivity extends Activity {
     public Mat					   mImage9;
     public Mat					   mImage10;
     
+    
     private Mat                    mResult;
     private Mat					   templateR;
     private Mat					   templateL;
@@ -171,11 +172,11 @@ public class AnnotateActivity extends Activity {
 
         setContentView(R.layout.annotate_surface_view);
         
-		mImage1 = loadImageFromFile("imara.png");
+		mRgba = loadImageFromFile("imara.png");
 		
 		// Convert the loaded image to bitmap
-		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
-		Utils.matToBitmap(mImage1, resultBitmap);
+		Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
+		Utils.matToBitmap(mRgba, resultBitmap);
 		// and display
     	ImageView img = (ImageView) findViewById(R.id.Image);
     	img.setImageBitmap(resultBitmap);
@@ -239,6 +240,12 @@ public class AnnotateActivity extends Activity {
         	Log.d("photo", "Failed loading image");
         }
         return rgbLoadedImage;
+    }
+    
+    public void detecting(Mat mRgbaim, Mat mGrayim)
+    {
+    	
+    	
     }
     
     /*
