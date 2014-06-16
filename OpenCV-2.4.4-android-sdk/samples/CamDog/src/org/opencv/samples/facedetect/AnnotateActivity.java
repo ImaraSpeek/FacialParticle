@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
@@ -47,7 +48,7 @@ import android.widget.ImageView;
 
 
 @SuppressWarnings("unused")
-public class AnnotateActivity extends Activity {
+public class AnnotateActivity extends Activity{
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
@@ -92,6 +93,7 @@ public class AnnotateActivity extends Activity {
     private CascadeClassifier	   mCascadeER;
     private CascadeClassifier	   mCascadeEL;
     private CascadeClassifier	   mCascadeM;
+    private CascadeClassifier	   mCascadeFace;
     
     private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
@@ -146,6 +148,7 @@ public class AnnotateActivity extends Activity {
                     Log.i(TAG, "OpenCV loaded successfully");
                     // Load native library after(!) OpenCV initialization
                     System.loadLibrary("detection_based_tracker");
+                    
                     load_cascade();                    
                     // enable the opencv camera
                     //mOpenCvCameraView.enableView();
@@ -158,6 +161,13 @@ public class AnnotateActivity extends Activity {
         }
     };
     
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+    }
+    
     
     public AnnotateActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
@@ -169,7 +179,12 @@ public class AnnotateActivity extends Activity {
         Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
+        System.loadLibrary("detection_based_tracker");
+        
+        load_cascade();     
 
+        // Set the layout
         setContentView(R.layout.annotate_surface_view);
         
         // read image to both matrixes as it cant load to an empty matrix
@@ -185,7 +200,7 @@ public class AnnotateActivity extends Activity {
     	ImageView img = (ImageView) findViewById(R.id.Image);
     	img.setImageBitmap(resultBitmap);
     	
-    	
+    	// Detect and colour the faces
     	//detecting(mRgba, mGray);
 
         // capture the current image
@@ -196,6 +211,28 @@ public class AnnotateActivity extends Activity {
             	startActivity(returnIntent);
             }
         });
+        
+        MatOfRect 	faces = new MatOfRect();
+        Rect[] 		facesArray = null;
+        
+        // Native Detector doesnt work for some reason
+        //mCascadeFace.detectMultiScale(mGray, faces);
+        // detect the faces using opencv
+        
+        /*
+        mNativeDetector.detect(mGray, faces);
+       	
+        // take the most important face
+        facesArray = faces.toArray();
+        //Log.i("info", "faces to array length " + facesArray.length);
+        // TODO sense if more than 1 face and give an error
+        if (facesArray.length > 0)
+        {
+        	// color the faces
+        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+        }
+        */
+        
     }
 
        
@@ -550,7 +587,16 @@ public class AnnotateActivity extends Activity {
         os.close();
         
         // create the native detector for opencv
-        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+        //mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+        
+        mCascadeFace = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+        if (mCascadeFace.empty()) {
+            Log.e(TAG, "Failed to load face cascade classifier");
+            mCascadeFace = null;
+        } else
+        {
+            Log.i(TAG, "Loaded Face cascade classifier from " + mCascadeFile.getAbsolutePath());
+        }
 
         cascadeDir.delete();
 
