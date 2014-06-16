@@ -9,7 +9,7 @@
         android:icon="@drawable/gwen"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
 
-        <activity android:name="LearnActivity"
+        <activity android:name="BasisActivity"
                   android:label="@string/app_name"
                   android:screenOrientation="landscape"
                   android:configChanges="keyboardHidden|orientation">
@@ -26,12 +26,15 @@
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
             android:value="com.example.myfirstapp.MainActivity" />
-        <!-- 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-             -->
+        </activity>
+        
+        <activity android:name="TrainingActivity"
+                  android:label="@string/app_name"
+                  android:screenOrientation="landscape"
+                  android:configChanges="keyboardHidden|orientation">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.myfirstapp.MainActivity" />
         </activity>
     </application>
 
