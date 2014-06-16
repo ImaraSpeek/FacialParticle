@@ -183,6 +183,9 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	SaveImage(mRgba);
+            	
+            	Intent annotateIntent = new Intent(getApplicationContext(), AnnotateActivity.class);
+            	startActivity(annotateIntent);
             	/*
             	if (click == 0)
             	{

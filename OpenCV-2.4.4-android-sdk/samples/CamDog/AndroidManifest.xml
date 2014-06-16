@@ -36,6 +36,16 @@
             android:name="android.support.PARENT_ACTIVITY"
             android:value="com.example.myfirstapp.MainActivity" />
         </activity>
+        
+        <activity android:name="AnnotateActivity"
+                  android:label="@string/app_name"
+                  android:screenOrientation="landscape"
+                  android:configChanges="keyboardHidden|orientation">
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.myfirstapp.MainActivity" />
+        </activity>
+        
     </application>
 
     <supports-screens android:resizeable="true"
