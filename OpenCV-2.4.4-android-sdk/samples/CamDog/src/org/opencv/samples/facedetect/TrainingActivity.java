@@ -177,6 +177,12 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         
+        String message = null;
+        // TODO save or discard the image depending how we got here
+        Intent intent = getIntent();
+        //message = intent.getStringExtra(AnnotateActivity.EXTRA_MESSAGE);
+        //Log.i("intents", message);
+        
         // capture the current image
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
@@ -238,7 +244,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     public void SaveImage (Mat mat) {
         Mat mIntermediateMat = new Mat();
 
-        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
+        Imgproc.cvtColor(mat, mIntermediateMat, Imgproc.COLOR_RGBA2BGR);
 
         //File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         File root = Environment.getExternalStorageDirectory();
@@ -311,14 +317,8 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         {
         	// color the faces
         	facedetected = true;
-        	//Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
         	
-        }
-        else
-        {
-        	facedetected = false;
-        }
-        /*
         	// draw the area for the eyes
         	Rect eyearea_left = new Rect(facesArray[0].x + facesArray[0].width/16 + (facesArray[0].width - 2 * facesArray[0].width/16)/2,(int)(facesArray[0].y + ( facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)(facesArray[0].height/3.5));
             Rect eyearea_right = new Rect(facesArray[0].x + facesArray[0].width/16,(int)(facesArray[0].y + (facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)( facesArray[0].height/3.5));
@@ -384,7 +384,14 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
 	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
 	        	
 	        }
+        	
         }
+        else
+        {
+        	facedetected = false;
+        }
+        /*
+        	
         */
         return mRgba;
     }

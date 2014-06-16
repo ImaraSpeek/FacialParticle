@@ -5,16 +5,25 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <ImageView
+        android:id="@+id/Image"
+        android:layout_width="374dp"
+        android:layout_height="240dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.98"
+        android:src="@drawable/icon" />
+
     <Button
         android:id="@+id/Return"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/return_button" />
-
-    <ImageView
-        android:id="@+id/Image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/icon" />
+    
+    <Button
+        android:id="@+id/Retake"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:text="@string/retake_button" />
 
 </LinearLayout>

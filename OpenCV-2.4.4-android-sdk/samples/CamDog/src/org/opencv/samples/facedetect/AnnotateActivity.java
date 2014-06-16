@@ -50,6 +50,10 @@ import android.widget.ImageView;
 @SuppressWarnings("unused")
 public class AnnotateActivity extends Activity{
 
+	// to send messages across intents
+	public final static String EXTRA_MESSAGE = "org.opencv.samples.facedetect.MESSAGE";
+
+	
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
@@ -145,7 +149,7 @@ public class AnnotateActivity extends Activity{
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                    Log.i(TAG, "OpenCV annotate loaded successfully");
                     // Load native library after(!) OpenCV initialization
                     System.loadLibrary("detection_based_tracker");
                                      
@@ -179,9 +183,7 @@ public class AnnotateActivity extends Activity{
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
-        //System.loadLibrary("detection_based_tracker");
-        
-        load_cascade();     
+        //load_cascade();     
 
         // Set the layout
         setContentView(R.layout.annotate_surface_view);
@@ -190,46 +192,30 @@ public class AnnotateActivity extends Activity{
 		mRgba = loadImageFromFile("imara.png");
 		mGray = loadImageFromFile("imara.png");
 		// transfer image to gray MAt
-		Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY);
-		
-		// Detect and colour the faces
-    	//detecting(mRgba, mGray);
+		Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGBA2GRAY);
 
         // capture the current image
         Button Return = (Button)findViewById(R.id.Return);
         Return.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+            	// TODO add saving of image 
             	Intent returnIntent = new Intent(getApplicationContext(), TrainingActivity.class);
+                String message = "saving the message";
+                returnIntent.putExtra(EXTRA_MESSAGE, message);
             	startActivity(returnIntent);
             }
         });
         
-        MatOfRect 	faces = new MatOfRect();
-        Rect[] 		facesArray = null;
-        
-        // Native Detector doesnt work for some reason
-        //mCascadeFace.detectMultiScale(mGray, faces);
-        // detect the faces using opencv
-        
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+        // capture the current image
+        Button Retake = (Button)findViewById(R.id.Retake);
+        Retake.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	Intent retakeIntent = new Intent(getApplicationContext(), TrainingActivity.class);
+                String message = "return the message";
+                retakeIntent.putExtra(EXTRA_MESSAGE, message);
+            	startActivity(retakeIntent);
             }
-            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-        
-        mNativeDetector.detect(mGray, faces);
-       	
-        // take the most important face
-        facesArray = faces.toArray();
-        Log.i("info", "faces to array length " + facesArray.length);
-        // TODO sense if more than 1 face and give an error
-        if (facesArray.length > 0)
-        {
-        	// color the faces
-        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-        }
+        });
         
         // Convert the loaded image to bitmap
      	Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
@@ -238,29 +224,9 @@ public class AnnotateActivity extends Activity{
         ImageView img = (ImageView) findViewById(R.id.Image);
         img.setImageBitmap(resultBitmap);
         
-        
     }
 
-       
-    public void SaveImage (Mat mat) {
-        Mat mIntermediateMat = new Mat();
 
-        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
-
-        //File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File root = Environment.getExternalStorageDirectory();
-        String filename = "imara.png";
-        File file = new File(root, filename);
-        
-        Boolean bool = null;
-        filename = file.toString();
-        bool = Highgui.imwrite(filename, mIntermediateMat);
-
-        if (bool == true)
-            Log.d(TAG, "SUCCESS writing image to external storage");
-        else
-            Log.d(TAG, "Fail writing image to external storage");
-    }
     
     public Mat loadImageFromFile(String fileName) {	    
     	Mat rgbLoadedImage = null;
@@ -271,11 +237,10 @@ public class AnnotateActivity extends Activity{
         // this should be in BGR format according to the
         // documentation.
         Mat image = Highgui.imread(file.getAbsolutePath());
-        //Mat image = Highgui.imread("R.raw.gwen_stefani10_20_20_70_70");
-
+  
         if (image.width() > 0) {
             rgbLoadedImage = new Mat(image.size(), image.type());
-            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGB);
+            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGBA);
             Log.d("photo", "Succes loading image");
             /*
             if (DEBUG)
