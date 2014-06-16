@@ -172,9 +172,11 @@ public class AnnotateActivity extends Activity {
 
         setContentView(R.layout.annotate_surface_view);
         
+        // read image to both matrixes as it cant load to an empty matrix
 		mRgba = loadImageFromFile("imara.png");
-		// transfer image to gray
-		//Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGBA2GRAY);
+		mGray = loadImageFromFile("imara.png");
+		// transfer image to gray MAt
+		Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY);
 		
 		// Convert the loaded image to bitmap
 		Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
@@ -182,6 +184,7 @@ public class AnnotateActivity extends Activity {
 		// and display
     	ImageView img = (ImageView) findViewById(R.id.Image);
     	img.setImageBitmap(resultBitmap);
+    	
     	
     	//detecting(mRgba, mGray);
 
