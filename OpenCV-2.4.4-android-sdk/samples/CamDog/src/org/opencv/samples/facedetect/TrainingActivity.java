@@ -20,6 +20,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
@@ -140,12 +141,9 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
                 case LoaderCallbackInterface.SUCCESS:
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
-
                     // Load native library after(!) OpenCV initialization
                     System.loadLibrary("detection_based_tracker");
-
                     load_cascade();                    
-
                     // enable the opencv camera
                     mOpenCvCameraView.enableView();
                 } break;
@@ -159,8 +157,6 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     
     
     public TrainingActivity() {
-        mDetectorName = new String[2];
-        mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -184,14 +180,11 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	mImage1 = new Mat();
-            	mImage1 = mRgba;
-            	mPictures = 1;
-            	mViewmode = IMAGE_1;
+            	// Save current frame
+            	SaveImage(mRgba);
                 DebugText.setText("Image 1.");
             }
         });
-        
         
     }
 
@@ -226,7 +219,54 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         // Do not release the images, they need to be saved!
     }
        
+    public void SaveImage (Mat mat) {
+        Mat mIntermediateMat = new Mat();
 
+        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
+
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        String filename = "imara.png";
+        File file = new File(path, filename);
+
+        Boolean bool = null;
+        filename = file.toString();
+        bool = Highgui.imwrite(filename, mIntermediateMat);
+
+        if (bool == true)
+            Log.d(TAG, "SUCCESS writing image to external storage");
+        else
+            Log.d(TAG, "Fail writing image to external storage");
+    }
+    
+    public Mat loadImageFromFile(String fileName) {
+
+        Mat rgbLoadedImage = null;
+
+        File root = Environment.getExternalStorageDirectory();
+        File file = new File(root, fileName);
+
+        // this should be in BGR format according to the
+        // documentation.
+        Mat image = Highgui.imread(file.getAbsolutePath());
+
+        if (image.width() > 0) {
+
+            rgbLoadedImage = new Mat(image.size(), image.type());
+
+            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGB);
+
+            /*
+            if (DEBUG)
+                Log.d(TAG, "loadedImage: " + "chans: " + image.channels()
+                        + ", (" + image.width() + ", " + image.height() + ")");
+			*/
+            image.release();
+            image = null;
+        }
+
+        return rgbLoadedImage;
+
+    }
     
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
@@ -239,7 +279,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         switch (viewmode){
         case REAL_TIME :
         	// return a real time image of the camera
-        	Imgproc.cvtColor(inputFrame.gray(), mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
+        	//Imgproc.cvtColor(inputFrame.gray(), mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
         	break;
         case IMAGE_1 :
         	// Display the first image taken
