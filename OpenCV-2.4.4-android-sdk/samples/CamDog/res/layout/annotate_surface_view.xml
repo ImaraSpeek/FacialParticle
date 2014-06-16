@@ -11,21 +11,10 @@
         android:layout_height="wrap_content"
         android:text="@string/capture_button" />
 
-    <EditText
-        android:id="@+id/DebugText"
-        android:layout_width="453dp"
-        android:layout_height="wrap_content"
-        android:ems="10" />
-
     <ImageView
         android:id="@+id/Image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/icon" />
 
-    <org.opencv.android.JavaCameraView
-        android:id="@+id/fd_activity_surface_view"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        opencv:camera_id="front" />
 </LinearLayout>

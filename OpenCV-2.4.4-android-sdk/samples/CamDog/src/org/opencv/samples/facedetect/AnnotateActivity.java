@@ -47,7 +47,7 @@ import android.widget.ImageView;
 
 
 @SuppressWarnings("unused")
-public class AnnotateActivity extends Activity implements CvCameraViewListener2 {
+public class AnnotateActivity extends Activity {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
@@ -147,7 +147,7 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
                     System.loadLibrary("detection_based_tracker");
                     load_cascade();                    
                     // enable the opencv camera
-                    mOpenCvCameraView.enableView();
+                    //mOpenCvCameraView.enableView();
                 } break;
                 default:
                 {
@@ -169,32 +169,12 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        setContentView(R.layout.training_surface_view);
+        setContentView(R.layout.annotate_surface_view);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
-        
-        // set text field for debugging purposes
-        EditText DebugText = (EditText)findViewById(R.id.DebugText);
-        DebugText.setText("Initiated.");
-        
         // capture the current image
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	SaveImage(mRgba);
-            	/*
-            	if (click == 0)
-            	{
-	            	mPictures = 1;
-	            	// DEBUG set the image
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageResource(R.drawable.gwen);
-	            	// Save current frame
-	            	SaveImage(mRgba);
-	            }
-            	if (click == 1)
-            	{
             		mImage1 = loadImageFromFile("imara.png");
             		
             		// Convert the loaded image to bitmap
@@ -203,47 +183,10 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
             		// and display
 	            	ImageView img = (ImageView) findViewById(R.id.Image);
 	            	img.setImageBitmap(resultBitmap);
-            		
-            	}
-            	click++;
-            	*/
             }
         });
-        
-
-        
     }
 
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-    }
-
-    public void onDestroy() {
-        super.onDestroy();
-        mOpenCvCameraView.disableView();
-    }
-
-    public void onCameraViewStarted(int width, int height) {
-        mGray = new Mat();
-        mRgba = new Mat();
-    }
-
-    public void onCameraViewStopped() {
-        mGray.release();
-        mRgba.release();
-        // Do not release the images, they need to be saved!
-    }
        
     public void SaveImage (Mat mat) {
         Mat mIntermediateMat = new Mat();
@@ -295,6 +238,7 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
         return rgbLoadedImage;
     }
     
+    /*
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
@@ -316,7 +260,7 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
         	//image.setImageBitmap(bitmap);
         	//cnt++;
 	        	
-        	/*
+        	
 	        if (mImage1 != null){
 	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
 	        	DebugText.setText("image is not null");
@@ -332,8 +276,8 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
 	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
 	        	DebugText.setText("image is null");
 	        }
-	        */
-        }
+	        
+        }*/
         
         /*
         switch (viewmode){
@@ -441,9 +385,10 @@ public class AnnotateActivity extends Activity implements CvCameraViewListener2 
 	        	
 	        }
         }
-        */
+        
         return mRgba;
     }
+    */
     
     private double  match_eye(Rect area, Mat mTemplate, Point pupil_coord, int type){
 		  Point matchLoc; 

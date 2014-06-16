@@ -182,39 +182,14 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+            	// Save the current frame
             	SaveImage(mRgba);
             	
+            	// Start new intent to annotate the frame for features
             	Intent annotateIntent = new Intent(getApplicationContext(), AnnotateActivity.class);
             	startActivity(annotateIntent);
-            	/*
-            	if (click == 0)
-            	{
-	            	mPictures = 1;
-	            	// DEBUG set the image
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageResource(R.drawable.gwen);
-	            	// Save current frame
-	            	SaveImage(mRgba);
-	            }
-            	if (click == 1)
-            	{
-            		mImage1 = loadImageFromFile("imara.png");
-            		
-            		// Convert the loaded image to bitmap
-            		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
-            		Utils.matToBitmap(mImage1, resultBitmap);
-            		// and display
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageBitmap(resultBitmap);
-            		
-            	}
-            	click++;
-            	*/
             }
         });
-        
-
-        
     }
 
     @Override
