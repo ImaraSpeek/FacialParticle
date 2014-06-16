@@ -174,10 +174,6 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         
-        // set text field for debugging purposes
-        EditText DebugText = (EditText)findViewById(R.id.DebugText);
-        DebugText.setText("Initiated.");
-        
         // capture the current image
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
