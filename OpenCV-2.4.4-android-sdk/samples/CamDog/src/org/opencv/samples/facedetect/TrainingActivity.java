@@ -44,6 +44,7 @@ import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 @SuppressWarnings("unused")
@@ -134,6 +135,8 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     private static final int IMAGE_10			= 10;
     private int 					mPictures 	= 0;
     private int click = 0;
+    
+    private boolean facedetected = false;
 
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -178,12 +181,25 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	// Save the current frame
-            	SaveImage(mRgba);
-            	
-            	// Start new intent to annotate the frame for features
-            	Intent annotateIntent = new Intent(getApplicationContext(), AnnotateActivity.class);
-            	startActivity(annotateIntent);
+            	if (facedetected)
+            	{
+	            	// Save the current frame
+	            	SaveImage(mRgba);
+	            	
+	            	// Start new intent to annotate the frame for features
+	            	Intent annotateIntent = new Intent(getApplicationContext(), AnnotateActivity.class);
+	            	startActivity(annotateIntent);
+            	}
+            	// if no face is detected show an error message
+            	else
+            	{
+            		Context context = getApplicationContext();
+            		CharSequence text = "No face is detected!";
+            		int duration = Toast.LENGTH_LONG;
+
+            		Toast toast = Toast.makeText(context, text, duration);
+            		toast.show();
+            	}
             }
         });
     }
@@ -274,58 +290,6 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         
-        // Switch on viewmode based on button
-        final int viewmode = mViewmode;
-       
-        
-        if (mPictures == 1){
-	        //mImage1 = loadImageFromFile();
-        	//image.setImageResource(R.drawable.gwen);
-        
-        	
-        	//int cnt = 1;
-        	//Bitmap bitmap = BitmapFactory.decodeFile("temp" + cnt + ".jpg");
-        	//int imageResource = getResources().getIdentifier("drawable/temp" + "gwen" + ".jpg", null, getPackageName());
-        	//Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imageResource);
-        	//image.setImageBitmap(bitmap);
-        	//cnt++;
-	        	
-        	/*
-	        if (mImage1 != null){
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is not null");
-	        	
-	            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
-	            Utils.matToBitmap(mImage1, bm);
-	            
-	            // find the imageview and draw it!
-	            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
-	            imgView.setImageBitmap(bm);
-        	}
-	        else {
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is null");
-	        }
-	        */
-        }
-        
-        /*
-        switch (viewmode){
-        case REAL_TIME :
-        	// return a real time image of the camera
-        	//Imgproc.cvtColor(inputFrame.gray(), mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
-        	break;
-        case IMAGE_1 :
-        	// Display the first image taken
-        	
-        	break;
-        	//return mImage1;
-        default :
-        	break;
-        	//return mImage1;
-        }*/
-        
-        /*
         MatOfRect 	faces = new MatOfRect();
         Rect[] 		facesArray = null;
 
@@ -343,12 +307,18 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     	// take the most important face
         facesArray = faces.toArray();
         //Log.i("info", "faces to array length " + facesArray.length);
-        // TODO sense if more than 1 face and give an error
         if (facesArray.length > 0)
         {
         	// color the faces
-        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+        	facedetected = true;
+        	//Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
         	
+        }
+        else
+        {
+        	facedetected = false;
+        }
+        /*
         	// draw the area for the eyes
         	Rect eyearea_left = new Rect(facesArray[0].x + facesArray[0].width/16 + (facesArray[0].width - 2 * facesArray[0].width/16)/2,(int)(facesArray[0].y + ( facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)(facesArray[0].height/3.5));
             Rect eyearea_right = new Rect(facesArray[0].x + facesArray[0].width/16,(int)(facesArray[0].y + (facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)( facesArray[0].height/3.5));
