@@ -192,14 +192,7 @@ public class AnnotateActivity extends Activity{
 		// transfer image to gray MAt
 		Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGB2GRAY);
 		
-		// Convert the loaded image to bitmap
-		Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
-		Utils.matToBitmap(mRgba, resultBitmap);
-		// and display
-    	ImageView img = (ImageView) findViewById(R.id.Image);
-    	img.setImageBitmap(resultBitmap);
-    	
-    	// Detect and colour the faces
+		// Detect and colour the faces
     	//detecting(mRgba, mGray);
 
         // capture the current image
@@ -218,19 +211,33 @@ public class AnnotateActivity extends Activity{
         //mCascadeFace.detectMultiScale(mGray, faces);
         // detect the faces using opencv
         
+        if (mAbsoluteFaceSize == 0) {
+            int height = mGray.rows();
+            if (Math.round(height * mRelativeFaceSize) > 0) {
+                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+            }
+            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
+        }
         
         mNativeDetector.detect(mGray, faces);
-       	/*
+       	
         // take the most important face
         facesArray = faces.toArray();
-        //Log.i("info", "faces to array length " + facesArray.length);
+        Log.i("info", "faces to array length " + facesArray.length);
         // TODO sense if more than 1 face and give an error
         if (facesArray.length > 0)
         {
         	// color the faces
         	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
         }
-        */
+        
+        // Convert the loaded image to bitmap
+     	Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
+     	Utils.matToBitmap(mRgba, resultBitmap);
+     	// and display
+        ImageView img = (ImageView) findViewById(R.id.Image);
+        img.setImageBitmap(resultBitmap);
+        
         
     }
 
