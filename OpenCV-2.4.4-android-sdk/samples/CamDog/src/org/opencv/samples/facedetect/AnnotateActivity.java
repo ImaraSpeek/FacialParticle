@@ -148,8 +148,7 @@ public class AnnotateActivity extends Activity{
                     Log.i(TAG, "OpenCV loaded successfully");
                     // Load native library after(!) OpenCV initialization
                     System.loadLibrary("detection_based_tracker");
-                    
-                    load_cascade();                    
+                                     
                     // enable the opencv camera
                     //mOpenCvCameraView.enableView();
                 } break;
@@ -180,7 +179,7 @@ public class AnnotateActivity extends Activity{
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
-        System.loadLibrary("detection_based_tracker");
+        //System.loadLibrary("detection_based_tracker");
         
         load_cascade();     
 
@@ -219,9 +218,9 @@ public class AnnotateActivity extends Activity{
         //mCascadeFace.detectMultiScale(mGray, faces);
         // detect the faces using opencv
         
-        /*
+        
         mNativeDetector.detect(mGray, faces);
-       	
+       	/*
         // take the most important face
         facesArray = faces.toArray();
         //Log.i("info", "faces to array length " + facesArray.length);
@@ -587,7 +586,7 @@ public class AnnotateActivity extends Activity{
         os.close();
         
         // create the native detector for opencv
-        //mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
         
         mCascadeFace = new CascadeClassifier(mCascadeFile.getAbsolutePath());
         if (mCascadeFace.empty()) {
