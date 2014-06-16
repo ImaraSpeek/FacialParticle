@@ -15,6 +15,9 @@ import android.widget.Button;
 public class BasisActivity extends Activity {
 
     private static final String    TAG                 = "OCVSample::Activity";
+    
+	// to send messages across intents
+	public final static String EXTRA_MESSAGE = "org.opencv.samples.facedetect.MESSAGE";
    
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
@@ -46,6 +49,8 @@ public class BasisActivity extends Activity {
         Learn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Intent LearnIntent = new Intent(getApplicationContext(), TrainingActivity.class);
+                String message = "saving the message";
+                LearnIntent.putExtra(EXTRA_MESSAGE, message);
                 startActivity(LearnIntent);
             }
         });

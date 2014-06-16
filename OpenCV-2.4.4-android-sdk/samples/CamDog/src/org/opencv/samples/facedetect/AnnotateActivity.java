@@ -200,7 +200,7 @@ public class AnnotateActivity extends Activity{
             public void onClick(View v) {
             	// TODO add saving of image 
             	Intent returnIntent = new Intent(getApplicationContext(), TrainingActivity.class);
-                String message = "saving the message";
+                String message = "save";
                 returnIntent.putExtra(EXTRA_MESSAGE, message);
             	startActivity(returnIntent);
             }
@@ -211,7 +211,7 @@ public class AnnotateActivity extends Activity{
         Retake.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	Intent retakeIntent = new Intent(getApplicationContext(), TrainingActivity.class);
-                String message = "return the message";
+                String message = "return";
                 retakeIntent.putExtra(EXTRA_MESSAGE, message);
             	startActivity(retakeIntent);
             }

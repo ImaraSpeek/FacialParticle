@@ -137,6 +137,18 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     private int click = 0;
     
     private boolean facedetected = false;
+    public double 	previous_ratio = 0.0;
+
+    public double 	ratio1 = 0.0;
+    public double 	ratio2 = 0.0;
+    public double 	ratio3 = 0.0;
+    public double 	ratio4 = 0.0;
+    public double 	ratio5 = 0.0;
+    public double 	ratio6 = 0.0;
+    public double 	ratio7 = 0.0;
+    public double 	ratio8 = 0.0;
+    public double 	ratio9 = 0.0;
+    public double 	ratio10 = 0.0;
 
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -177,11 +189,8 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
         
-        String message = null;
-        // TODO save or discard the image depending how we got here
-        Intent intent = getIntent();
-        //message = intent.getStringExtra(AnnotateActivity.EXTRA_MESSAGE);
-        //Log.i("intents", message);
+
+        
         
         // capture the current image
         Button Capture = (Button)findViewById(R.id.Capture);
@@ -209,6 +218,13 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             }
         });
     }
+    
+    public void deleteAFile(String filename)
+    {
+        File root = Environment.getExternalStorageDirectory();
+        File file = new File(root, filename);
+        file.delete();
+    }
 
     @Override
     public void onPause()
@@ -223,6 +239,25 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     {
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+        String message = null;
+        
+        // TODO save or discard the image depending how we got here
+        Intent intent = getIntent();
+        message = intent.getStringExtra(AnnotateActivity.EXTRA_MESSAGE);
+        Log.i("intents", message);
+        
+        // TODO make a loop of 10
+        if (message == "save")
+        {
+        	// TODO save the image, the ratio and increase counter 
+        	ratio1 = previous_ratio;
+        }
+        else if (message == "return")
+        {
+        	// TODO delete the image
+           deleteAFile("imara.png");
+        }
+        Log.i("info", "the face eyes ratio is: " + ratio1);
     }
 
     public void onDestroy() {
@@ -377,11 +412,14 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
 
 	        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
 	        	
-	        	// pythagoras
+	        	// Euclidean distances
 	        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
-	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
+	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	
 	        	
-	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
+	        	// Save the ratio for possibly later
+	        	previous_ratio = interoccular / moutheyes;
+	        	
+	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + " previous ratio: " + previous_ratio);
 	        	
 	        }
         	
