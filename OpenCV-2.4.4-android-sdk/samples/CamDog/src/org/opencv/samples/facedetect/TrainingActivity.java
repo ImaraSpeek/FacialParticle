@@ -182,7 +182,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             	// convert to bitmap:
-            	loadImageFromFile();
+            	//loadImageFromFile();
             	//SaveImage(mRgba);
             	mPictures = 1;
             	// Save current frame
@@ -190,6 +190,9 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
                 //DebugText.setText("Image 1.");
             	ImageView img = (ImageView) findViewById(R.id.Image);
             	img.setImageResource(R.drawable.gwen);
+            	
+            	// Save current frame
+            	SaveImage(mRgba);
             }
         });
         
