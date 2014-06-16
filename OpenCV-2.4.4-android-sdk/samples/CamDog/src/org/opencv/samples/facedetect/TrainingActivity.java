@@ -43,6 +43,7 @@ import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 
 @SuppressWarnings("unused")
@@ -131,7 +132,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     private static final int IMAGE_8			= 8;
     private static final int IMAGE_9			= 9;
     private static final int IMAGE_10			= 10;
-    private int 					mPictures = 0;
+    private int 					mPictures 	= 0;
 
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -180,8 +181,12 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+            	// convert to bitmap:
+            	loadImageFromFile();
+            	//SaveImage(mRgba);
+            	mPictures = 1;
             	// Save current frame
-            	SaveImage(mRgba);
+            	//imgView.setImageBitmap(bm);
                 DebugText.setText("Image 1.");
             }
         });
@@ -224,9 +229,10 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
 
         Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
 
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        //File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File root = Environment.getExternalStorageDirectory();
         String filename = "imara.png";
-        File file = new File(path, filename);
+        File file = new File(root, filename);
 
         Boolean bool = null;
         filename = file.toString();
@@ -238,9 +244,10 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             Log.d(TAG, "Fail writing image to external storage");
     }
     
-    public Mat loadImageFromFile(String fileName) {
-
-        Mat rgbLoadedImage = null;
+    //public Mat loadImageFromFile(String fileName) {
+    public Mat loadImageFromFile() {
+    	    
+    	Mat rgbLoadedImage = null;
 
         File root = Environment.getExternalStorageDirectory();
         File file = new File(root, fileName);
@@ -250,11 +257,8 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Mat image = Highgui.imread(file.getAbsolutePath());
 
         if (image.width() > 0) {
-
             rgbLoadedImage = new Mat(image.size(), image.type());
-
-            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGB);
-
+            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGBA);
             /*
             if (DEBUG)
                 Log.d(TAG, "loadedImage: " + "chans: " + image.channels()
@@ -263,7 +267,6 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             image.release();
             image = null;
         }
-
         return rgbLoadedImage;
 
     }
@@ -276,6 +279,18 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         // Switch on viewmode based on button
         final int viewmode = mViewmode;
         
+        if (mPictures == 1){
+        	mImage1 = loadImageFromFile("imara.png");
+        	
+            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mImage1, bm);
+            
+            // find the imageview and draw it!
+            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
+            imgView.setImageBitmap(bm);	
+        }
+        
+        /*
         switch (viewmode){
         case REAL_TIME :
         	// return a real time image of the camera
@@ -289,7 +304,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         default :
         	break;
         	//return mImage1;
-        }
+        }*/
         
         /*
         MatOfRect 	faces = new MatOfRect();
