@@ -47,7 +47,7 @@ import android.widget.ImageView;
 
 
 @SuppressWarnings("unused")
-public class TrainingActivity extends Activity implements CvCameraViewListener2 {
+public class AnnotateFaceActivity extends Activity  {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
@@ -147,7 +147,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
                     System.loadLibrary("detection_based_tracker");
                     load_cascade();                    
                     // enable the opencv camera
-                    mOpenCvCameraView.enableView();
+                    // mOpenCvCameraView.enableView();
                 } break;
                 default:
                 {
@@ -158,7 +158,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     };
     
     
-    public TrainingActivity() {
+    public AnnotateFaceActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -169,102 +169,18 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        setContentView(R.layout.training_surface_view);
-
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-        mOpenCvCameraView.setCvCameraViewListener(this);
+        setContentView(R.layout.annotate_surface_view);
         
-        // set text field for debugging purposes
-        EditText DebugText = (EditText)findViewById(R.id.DebugText);
-        DebugText.setText("Initiated.");
-        
-        // capture the current image
-        Button Capture = (Button)findViewById(R.id.Capture);
-        Capture.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-            	SaveImage(mRgba);
-            	/*
-            	if (click == 0)
-            	{
-	            	mPictures = 1;
-	            	// DEBUG set the image
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageResource(R.drawable.gwen);
-	            	// Save current frame
-	            	SaveImage(mRgba);
-	            }
-            	if (click == 1)
-            	{
-            		mImage1 = loadImageFromFile("imara.png");
-            		
-            		// Convert the loaded image to bitmap
-            		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
-            		Utils.matToBitmap(mImage1, resultBitmap);
-            		// and display
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageBitmap(resultBitmap);
-            		
-            	}
-            	click++;
-            	*/
-            }
-        });
-        
-
-        
+		mImage1 = loadImageFromFile("imara.png");
+		
+		// Convert the loaded image to bitmap
+		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
+		Utils.matToBitmap(mImage1, resultBitmap);
+		// and display
+    	ImageView img = (ImageView) findViewById(R.id.Image);
+    	img.setImageBitmap(resultBitmap);
     }
 
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        if (mOpenCvCameraView != null)
-            mOpenCvCameraView.disableView();
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-    }
-
-    public void onDestroy() {
-        super.onDestroy();
-        mOpenCvCameraView.disableView();
-    }
-
-    public void onCameraViewStarted(int width, int height) {
-        mGray = new Mat();
-        mRgba = new Mat();
-    }
-
-    public void onCameraViewStopped() {
-        mGray.release();
-        mRgba.release();
-        // Do not release the images, they need to be saved!
-    }
-       
-    public void SaveImage (Mat mat) {
-        Mat mIntermediateMat = new Mat();
-
-        Imgproc.cvtColor(mRgba, mIntermediateMat, Imgproc.COLOR_RGBA2BGR, 3);
-
-        //File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File root = Environment.getExternalStorageDirectory();
-        String filename = "imara.png";
-        File file = new File(root, filename);
-        
-        Boolean bool = null;
-        filename = file.toString();
-        bool = Highgui.imwrite(filename, mIntermediateMat);
-
-        if (bool == true)
-            Log.d(TAG, "SUCCESS writing image to external storage");
-        else
-            Log.d(TAG, "Fail writing image to external storage");
-    }
-    
     public Mat loadImageFromFile(String fileName) {	    
     	Mat rgbLoadedImage = null;
 
@@ -293,156 +209,6 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         	Log.d("photo", "Failed loading image");
         }
         return rgbLoadedImage;
-    }
-    
-    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
-
-        mRgba = inputFrame.rgba();
-        mGray = inputFrame.gray();
-        
-        // Switch on viewmode based on button
-        final int viewmode = mViewmode;
-       
-        
-        if (mPictures == 1){
-	        //mImage1 = loadImageFromFile();
-        	//image.setImageResource(R.drawable.gwen);
-        
-        	
-        	//int cnt = 1;
-        	//Bitmap bitmap = BitmapFactory.decodeFile("temp" + cnt + ".jpg");
-        	//int imageResource = getResources().getIdentifier("drawable/temp" + "gwen" + ".jpg", null, getPackageName());
-        	//Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imageResource);
-        	//image.setImageBitmap(bitmap);
-        	//cnt++;
-	        	
-        	/*
-	        if (mImage1 != null){
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is not null");
-	        	
-	            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
-	            Utils.matToBitmap(mImage1, bm);
-	            
-	            // find the imageview and draw it!
-	            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
-	            imgView.setImageBitmap(bm);
-        	}
-	        else {
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is null");
-	        }
-	        */
-        }
-        
-        /*
-        switch (viewmode){
-        case REAL_TIME :
-        	// return a real time image of the camera
-        	//Imgproc.cvtColor(inputFrame.gray(), mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
-        	break;
-        case IMAGE_1 :
-        	// Display the first image taken
-        	
-        	break;
-        	//return mImage1;
-        default :
-        	break;
-        	//return mImage1;
-        }*/
-        
-        /*
-        MatOfRect 	faces = new MatOfRect();
-        Rect[] 		facesArray = null;
-
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
-            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
-        
-    	
-    	// detect the faces using opencv
-    	mNativeDetector.detect(mGray, faces);
-    	// take the most important face
-        facesArray = faces.toArray();
-        //Log.i("info", "faces to array length " + facesArray.length);
-        // TODO sense if more than 1 face and give an error
-        if (facesArray.length > 0)
-        {
-        	// color the faces
-        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-        	
-        	// draw the area for the eyes
-        	Rect eyearea_left = new Rect(facesArray[0].x + facesArray[0].width/16 + (facesArray[0].width - 2 * facesArray[0].width/16)/2,(int)(facesArray[0].y + ( facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)(facesArray[0].height/3.5));
-            Rect eyearea_right = new Rect(facesArray[0].x + facesArray[0].width/16,(int)(facesArray[0].y + (facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)( facesArray[0].height/3.5));
-        	
-            // draw rectangles for debugging
-            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , EYES_RECT_COLOR, 2);
-            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), EYES_RECT_COLOR, 2);
-            
-            // compute the mouth area
-	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
-	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
-            
-	        // learn the template for the features
-	        if(learn_frames<5)
-	        {
-	        	templateL = get_template(mCascadeEL,eyearea_left,24);
-             	templateR = get_template(mCascadeER,eyearea_right,24);
-             	// have to open mouth slightly for it to calibrate
-             	templateM = get_templateMouth(mCascadeM, moutharea,24);
-             	
-             	learn_frames++;
-             	// TODO make sure that templates are correct
-            }
-	        else
-	        {
-	        	// create points locally to use here
-	        	Point left_pupil = new Point();
-	        	Point right_pupil = new Point();
-	        	Point lips = new Point();
-	        	// Dummy point to calculate distance from eyes to middle lips
-	        	Point middle_pupil = new Point();
-	        	
-	        	// match_value is the certainty that it is the pupil
-	        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, TrainingActivity.method); 
-	        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, TrainingActivity.method); 
-	        	match_valuem = match_eye(moutharea, templateM, lips, TrainingActivity.method);
-	        	
-	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
-
-	        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
-	        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
-	        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
-	        	
-	        	// determine horizontal and vertical distances
-	        	double eyex = Math.abs(left_pupil.x - right_pupil.x);
-	        	double eyey = Math.abs(left_pupil.y - right_pupil.y);
-	        	// determine the x by subtracting half of the width from the farthest x coordinate
-	        	middle_pupil.x = left_pupil.x - (eyex / 2);
-	        	middle_pupil.y = left_pupil.y - (eyey / 2);
-	        	
-	        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
-	        	
-	        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
-	        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
-	        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
-
-	        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
-	        	
-	        	// pythagoras
-	        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
-	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
-	        	
-	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
-	        	
-	        }
-        }
-        */
-        return mRgba;
     }
     
     private double  match_eye(Rect area, Mat mTemplate, Point pupil_coord, int type){
