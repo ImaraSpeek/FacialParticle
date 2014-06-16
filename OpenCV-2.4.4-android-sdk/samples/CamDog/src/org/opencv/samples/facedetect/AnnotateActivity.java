@@ -173,6 +173,8 @@ public class AnnotateActivity extends Activity {
         setContentView(R.layout.annotate_surface_view);
         
 		mRgba = loadImageFromFile("imara.png");
+		// transfer image to gray
+		//Imgproc.cvtColor(mRgba, mGray, Imgproc.COLOR_RGBA2GRAY);
 		
 		// Convert the loaded image to bitmap
 		Bitmap resultBitmap = Bitmap.createBitmap(mRgba.cols(),  mRgba.rows(),Bitmap.Config.ARGB_8888);;
@@ -180,6 +182,8 @@ public class AnnotateActivity extends Activity {
 		// and display
     	ImageView img = (ImageView) findViewById(R.id.Image);
     	img.setImageBitmap(resultBitmap);
+    	
+    	//detecting(mRgba, mGray);
 
         // capture the current image
         Button Return = (Button)findViewById(R.id.Return);
@@ -244,7 +248,28 @@ public class AnnotateActivity extends Activity {
     
     public void detecting(Mat mRgbaim, Mat mGrayim)
     {
-    	
+    	MatOfRect 	faces = new MatOfRect();
+        Rect[] 		facesArray = null;
+
+        if (mAbsoluteFaceSize == 0) {
+            int height = mGray.rows();
+            if (Math.round(height * mRelativeFaceSize) > 0) {
+                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+            }
+            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
+        }
+        
+    	// detect the faces using opencv
+    	mNativeDetector.detect(mGray, faces);
+    	// take the most important face
+        facesArray = faces.toArray();
+        //Log.i("info", "faces to array length " + facesArray.length);
+        // TODO sense if more than 1 face and give an error
+        if (facesArray.length > 0)
+        {
+        	// color the faces
+        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
+        }
     	
     }
     
@@ -257,53 +282,6 @@ public class AnnotateActivity extends Activity {
         // Switch on viewmode based on button
         final int viewmode = mViewmode;
        
-        
-        if (mPictures == 1){
-	        //mImage1 = loadImageFromFile();
-        	//image.setImageResource(R.drawable.gwen);
-        
-        	
-        	//int cnt = 1;
-        	//Bitmap bitmap = BitmapFactory.decodeFile("temp" + cnt + ".jpg");
-        	//int imageResource = getResources().getIdentifier("drawable/temp" + "gwen" + ".jpg", null, getPackageName());
-        	//Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imageResource);
-        	//image.setImageBitmap(bitmap);
-        	//cnt++;
-	        	
-        	
-	        if (mImage1 != null){
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is not null");
-	        	
-	            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
-	            Utils.matToBitmap(mImage1, bm);
-	            
-	            // find the imageview and draw it!
-	            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
-	            imgView.setImageBitmap(bm);
-        	}
-	        else {
-	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
-	        	DebugText.setText("image is null");
-	        }
-	        
-        }*/
-        
-        /*
-        switch (viewmode){
-        case REAL_TIME :
-        	// return a real time image of the camera
-        	//Imgproc.cvtColor(inputFrame.gray(), mRgba, Imgproc.COLOR_GRAY2RGBA, 4);
-        	break;
-        case IMAGE_1 :
-        	// Display the first image taken
-        	
-        	break;
-        	//return mImage1;
-        default :
-        	break;
-        	//return mImage1;
-        }*/
         
         /*
         MatOfRect 	faces = new MatOfRect();
