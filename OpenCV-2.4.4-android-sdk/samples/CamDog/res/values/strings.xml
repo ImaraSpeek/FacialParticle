@@ -5,4 +5,5 @@
     <string name="detect_button">Detect my face</string>
     <string name="learn_button">Learn my face</string>
     <string name="capture_button">Take an image</string>
+    <string name="return_button">Return to stream</string>
 </resources>

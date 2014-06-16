@@ -170,19 +170,22 @@ public class AnnotateActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.annotate_surface_view);
+        
+		mImage1 = loadImageFromFile("imara.png");
+		
+		// Convert the loaded image to bitmap
+		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
+		Utils.matToBitmap(mImage1, resultBitmap);
+		// and display
+    	ImageView img = (ImageView) findViewById(R.id.Image);
+    	img.setImageBitmap(resultBitmap);
 
         // capture the current image
-        Button Capture = (Button)findViewById(R.id.Capture);
-        Capture.setOnClickListener(new View.OnClickListener() {
+        Button Return = (Button)findViewById(R.id.Return);
+        Return.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            		mImage1 = loadImageFromFile("imara.png");
-            		
-            		// Convert the loaded image to bitmap
-            		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
-            		Utils.matToBitmap(mImage1, resultBitmap);
-            		// and display
-	            	ImageView img = (ImageView) findViewById(R.id.Image);
-	            	img.setImageBitmap(resultBitmap);
+            	Intent returnIntent = new Intent(getApplicationContext(), TrainingActivity.class);
+            	startActivity(returnIntent);
             }
         });
     }

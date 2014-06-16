@@ -6,15 +6,15 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/Capture"
+        android:id="@+id/Return"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/capture_button" />
+        android:text="@string/return_button" />
 
     <ImageView
         android:id="@+id/Image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:src="@drawable/icon" />
 
 </LinearLayout>
