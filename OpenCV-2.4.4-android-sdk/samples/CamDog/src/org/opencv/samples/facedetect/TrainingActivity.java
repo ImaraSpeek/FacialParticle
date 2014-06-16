@@ -195,6 +195,13 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             	{
             		mImage1 = loadImageFromFile("imara.png");
             		
+            		// Convert the loaded image to bitmap
+            		Bitmap resultBitmap = Bitmap.createBitmap(mImage1.cols(),  mImage1.rows(),Bitmap.Config.ARGB_8888);;
+            		Utils.matToBitmap(mImage1, resultBitmap);
+            		// and display
+	            	ImageView img = (ImageView) findViewById(R.id.Image);
+	            	img.setImageBitmap(resultBitmap);
+            		
             	}
             	click++;
             }
