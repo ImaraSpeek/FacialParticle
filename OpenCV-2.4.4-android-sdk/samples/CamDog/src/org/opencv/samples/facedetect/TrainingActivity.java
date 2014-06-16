@@ -174,7 +174,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         mOpenCvCameraView.setCvCameraViewListener(this);
         
         // set text field for debugging purposes
-        final EditText DebugText = (EditText)findViewById(R.id.DebugText);
+        EditText DebugText = (EditText)findViewById(R.id.DebugText);
         DebugText.setText("Initiated.");
         
         // capture the current image
@@ -187,9 +187,13 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             	mPictures = 1;
             	// Save current frame
             	//imgView.setImageBitmap(bm);
-                DebugText.setText("Image 1.");
+                //DebugText.setText("Image 1.");
+            	ImageView img = (ImageView) findViewById(R.id.Image);
+            	img.setImageResource(R.drawable.gwen);
             }
         });
+        
+
         
     }
 
@@ -249,16 +253,17 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     	    
     	Mat rgbLoadedImage = null;
 
-        File root = Environment.getExternalStorageDirectory();
-        File file = new File(root, fileName);
+        //File root = Environment.getExternalStorageDirectory();
+        //File file = new File(root, fileName);
 
         // this should be in BGR format according to the
         // documentation.
-        Mat image = Highgui.imread(file.getAbsolutePath());
+        //Mat image = Highgui.imread(file.getAbsolutePath());
+        Mat image = Highgui.imread("R.raw.gwen_stefani10_20_20_70_70");
 
         if (image.width() > 0) {
             rgbLoadedImage = new Mat(image.size(), image.type());
-            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGBA);
+            Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGB);
             /*
             if (DEBUG)
                 Log.d(TAG, "loadedImage: " + "chans: " + image.channels()
@@ -278,16 +283,37 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         
         // Switch on viewmode based on button
         final int viewmode = mViewmode;
+       
         
         if (mPictures == 1){
-        	mImage1 = loadImageFromFile("imara.png");
+	        //mImage1 = loadImageFromFile();
+        	//image.setImageResource(R.drawable.gwen);
+        
         	
-            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(mImage1, bm);
-            
-            // find the imageview and draw it!
-            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
-            imgView.setImageBitmap(bm);	
+        	//int cnt = 1;
+        	//Bitmap bitmap = BitmapFactory.decodeFile("temp" + cnt + ".jpg");
+        	//int imageResource = getResources().getIdentifier("drawable/temp" + "gwen" + ".jpg", null, getPackageName());
+        	//Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imageResource);
+        	//image.setImageBitmap(bitmap);
+        	//cnt++;
+	        	
+        	/*
+	        if (mImage1 != null){
+	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
+	        	DebugText.setText("image is not null");
+	        	
+	            Bitmap bm = Bitmap.createBitmap(mImage1.cols(), mImage1.rows(),Bitmap.Config.ARGB_8888);
+	            Utils.matToBitmap(mImage1, bm);
+	            
+	            // find the imageview and draw it!
+	            ImageView imgView = (ImageView) findViewById(R.id.sampleImageView);
+	            imgView.setImageBitmap(bm);
+        	}
+	        else {
+	        	EditText DebugText = (EditText)findViewById(R.id.DebugText);
+	        	DebugText.setText("image is null");
+	        }
+	        */
         }
         
         /*
