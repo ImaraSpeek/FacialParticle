@@ -133,6 +133,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
     private static final int IMAGE_9			= 9;
     private static final int IMAGE_10			= 10;
     private int 					mPictures 	= 0;
+    private int click = 0;
 
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -181,18 +182,21 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         Button Capture = (Button)findViewById(R.id.Capture);
         Capture.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	// convert to bitmap:
-            	//loadImageFromFile();
-            	//SaveImage(mRgba);
-            	mPictures = 1;
-            	// Save current frame
-            	//imgView.setImageBitmap(bm);
-                //DebugText.setText("Image 1.");
-            	ImageView img = (ImageView) findViewById(R.id.Image);
-            	img.setImageResource(R.drawable.gwen);
-            	
-            	// Save current frame
-            	SaveImage(mRgba);
+            	if (click == 0)
+            	{
+	            	mPictures = 1;
+	            	// DEBUG set the image
+	            	ImageView img = (ImageView) findViewById(R.id.Image);
+	            	img.setImageResource(R.drawable.gwen);
+	            	// Save current frame
+	            	SaveImage(mRgba);
+	            }
+            	if (click == 1)
+            	{
+            		mImage1 = loadImageFromFile("imara.png");
+            		
+            	}
+            	click++;
             }
         });
         
@@ -240,7 +244,7 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
         File root = Environment.getExternalStorageDirectory();
         String filename = "imara.png";
         File file = new File(root, filename);
-
+        
         Boolean bool = null;
         filename = file.toString();
         bool = Highgui.imwrite(filename, mIntermediateMat);
@@ -251,22 +255,21 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             Log.d(TAG, "Fail writing image to external storage");
     }
     
-    //public Mat loadImageFromFile(String fileName) {
-    public Mat loadImageFromFile() {
-    	    
+    public Mat loadImageFromFile(String fileName) {	    
     	Mat rgbLoadedImage = null;
 
-        //File root = Environment.getExternalStorageDirectory();
-        //File file = new File(root, fileName);
+        File root = Environment.getExternalStorageDirectory();
+        File file = new File(root, fileName);
 
         // this should be in BGR format according to the
         // documentation.
-        //Mat image = Highgui.imread(file.getAbsolutePath());
-        Mat image = Highgui.imread("R.raw.gwen_stefani10_20_20_70_70");
+        Mat image = Highgui.imread(file.getAbsolutePath());
+        //Mat image = Highgui.imread("R.raw.gwen_stefani10_20_20_70_70");
 
         if (image.width() > 0) {
             rgbLoadedImage = new Mat(image.size(), image.type());
             Imgproc.cvtColor(image, rgbLoadedImage, Imgproc.COLOR_BGR2RGB);
+            Log.d("photo", "Succes loading image");
             /*
             if (DEBUG)
                 Log.d(TAG, "loadedImage: " + "chans: " + image.channels()
@@ -275,8 +278,11 @@ public class TrainingActivity extends Activity implements CvCameraViewListener2 
             image.release();
             image = null;
         }
+        else
+        {
+        	Log.d("photo", "Failed loading image");
+        }
         return rgbLoadedImage;
-
     }
     
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
