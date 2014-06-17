@@ -319,7 +319,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Point newPartPoint = new Point();
 		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
 		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
-		        	Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
+		        	//Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
 		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
@@ -356,6 +356,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        
 		        // Make a proper estimation based on the particles
 		        // TODO
+		        
+		        Point estimate = new Point();
+		        double weightnorm = 0.0;
+		        for (int i = 0; i < nParticles; i ++)
+		        {
+		        	estimate.x += (particles[i].getLocation().x * particles[i].getWeight());
+		        	estimate.y += (particles[i].getLocation().y * particles[i].getWeight());
+		        	weightnorm += particles[i].getWeight();
+		        }
+		        // average the position of the estimate
+		        estimate.x = estimate.x / weightnorm;
+		        estimate.y = estimate.y / weightnorm;
+		        Core.circle(mRgba, estimate, 5, MOUTH_RECT_COLOR);
 		        
 		        
 		        /*
