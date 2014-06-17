@@ -338,11 +338,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	// Dummy point to calculate distance from eyes to middle lips
 		        	Point middle_pupil = new Point();
 		        	
-		        	// TODO hod descriptors for dala triggs
-		        	//HOGDescriptor hog = new HOGDescriptor();
-		        	//hog.setSVMDetector(HOGDescriptor.getDefaultPeopleDetector());
-		        	
-		        	
 		        	// match_value is the squared difference normalized across the area
 		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_SQDIFF_NORMED, RETURN_EYE_LEFT); 
 		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_SQDIFF_NORMED, RETURN_EYE_RIGHT); 
@@ -351,12 +346,27 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 
 			        double sumweight = 0.0;
+			        // reserve an array with the likelihoods
+			        float likelihood[] = new float[nParticles];
+			        mResultR.get(0, 0, likelihood);
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	// distance between particle and the eye
 		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
-		        	double weight = Particle.weightGauss(distance);
+		        	// TODO determine the likelihood based on the result matrix
+		        	//double[] likelihood = mResultR.get((int)particles[i].getLocation().y, (int)particles[i].getLocation().x);
+		        	
+		        	// assign likelihood of the particles location from the result matrix
+		        	int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
+		        	
+		        	//float likelihood = mResultR.a
+		        	
+		        	//float elem_a= a.at<float>(i,j); 
+		        	
+		        	double weight = Particle.weightGauss(likelihood[index]);
+		  
+		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
 		        }
