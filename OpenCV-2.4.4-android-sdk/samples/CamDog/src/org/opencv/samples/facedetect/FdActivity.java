@@ -24,6 +24,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
+import org.opencv.objdetect.HOGDescriptor;
 import org.opencv.objdetect.Objdetect;
 import org.opencv.samples.facedetect.particlefilter.Particle;
 
@@ -106,7 +107,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     private long				    starttime = 0;
     private int						learn_frames = 0;
-    private double					match_valuel, match_valuer, match_valuem;
     
     // Particle filter variables
     private int nParticles = 1000;
@@ -331,11 +331,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	// Dummy point to calculate distance from eyes to middle lips
 		        	Point middle_pupil = new Point();
 		        	
+		        	// TODO hod descriptors for dala triggs
+		        	//HOGDescriptor hog = new HOGDescriptor();
+		        	//hog.setSVMDetector(HOGDescriptor.getDefaultPeopleDetector());
+		        	
+		        	
 		        	// match_value is the certainty that it is the pupil
-		        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
-		        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
-		        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
+		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
+		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
+		        	double match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
 		        
+		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel);
 
 			        double sumweight = 0.0;
 	        	// assign weights according to observation for right eye
@@ -351,12 +357,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	particles[i].setWeight(particles[i].getWeight() / sumweight);
-		        	//Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
+		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
 		        
 		        // Make a proper estimation based on the particles
-		        // TODO
-		        
 		        Point estimate = new Point();
 		        double weightnorm = 0.0;
 		        for (int i = 0; i < nParticles; i ++)
