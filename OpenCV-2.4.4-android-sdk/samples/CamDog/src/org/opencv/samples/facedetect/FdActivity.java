@@ -274,6 +274,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
 	        else
 	        {
+	        	
+	        	// TODO resample the particles according to their assigned weight
+	        	
+	        	
+	        	
+	        	// right_eye
 	        	for (int i = 0; i < nParticles; i++)
 	        	{
 	        		Point transPoint;
@@ -299,45 +305,70 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
-	        	// create points locally to use here
-	        	Point left_pupil = new Point();
-	        	Point right_pupil = new Point();
-	        	Point lips = new Point();
-	        	// Dummy point to calculate distance from eyes to middle lips
-	        	Point middle_pupil = new Point();
-	        	
-	        	// match_value is the certainty that it is the pupil
-	        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
-	        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
-	        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
-	        	
-	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
+	        	// Measure all the features 
+	        	{
+		        	
+		        	// create points locally to use here
+		        	Point left_pupil = new Point();
+		        	Point right_pupil = new Point();
+		        	Point lips = new Point();
+		        	// Dummy point to calculate distance from eyes to middle lips
+		        	Point middle_pupil = new Point();
+		        	
+		        	// match_value is the certainty that it is the pupil
+		        	match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
+		        	match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
+		        	match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
+		        
 
-	        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
-	        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
-	        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
+			        double sumweight = 0.0;
+		        	
+	        	// TODO assign weights according to observation for right eye
+		        for (int i = 0; i< nParticles; i++)
+		        {
+		        	// distance between particle and the eye
+		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
+		        	double weight = Particle.weightGauss(distance);
+		        	particles[i].setWeight(weight);
+		        	sumweight += weight;
+		        }
+		        // normalize the weight
+		        for (int i = 0; i< nParticles; i++)
+		        {
+		        	particles[i].setWeight(particles[i].getWeight() / sumweight);
+		        }
+		        /*
+		        	
+	        	// Measure distances and ratios
 	        	
-	        	// determine horizontal and vertical distances
-	        	double eyex = Math.abs(left_pupil.x - right_pupil.x);
-	        	double eyey = Math.abs(left_pupil.y - right_pupil.y);
-	        	// determine the x by subtracting half of the width from the farthest x coordinate
-	        	middle_pupil.x = left_pupil.x - (eyex / 2);
-	        	middle_pupil.y = left_pupil.y - (eyey / 2);
-	        	
-	        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
-	        	
-	        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
-	        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
-	        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
-
-	        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
-	        	
-	        	// pythagoras
-	        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
-	        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
-	        	
-	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
-	        	
+	        		//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
+	        		
+		        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
+		        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
+		        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
+		        	
+		        	// determine horizontal and vertical distances
+		        	double eyex = Math.abs(left_pupil.x - right_pupil.x);
+		        	double eyey = Math.abs(left_pupil.y - right_pupil.y);
+		        	// determine the x by subtracting half of the width from the farthest x coordinate
+		        	middle_pupil.x = left_pupil.x - (eyex / 2);
+		        	middle_pupil.y = left_pupil.y - (eyey / 2);
+		        	
+		        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
+		        	
+		        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
+		        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
+		        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
+	
+		        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
+		        	
+		        	// pythagoras
+		        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
+		        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
+		        	
+		        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
+		        	*/
+	        	}
 	        	
 	        	
 	        }

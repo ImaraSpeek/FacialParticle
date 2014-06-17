@@ -6,6 +6,7 @@ public class Particle {
 
 	private Point location;
 	private double weight;
+	private static double deviation = 10;
 	
 	public void setLocation(Point l) {
 		location = l;
@@ -28,6 +29,11 @@ public class Particle {
     {
     	double range = (max - min);
     	return (Math.random() * range) + min;
+    }
+    
+    public static double weightGauss(double distance)
+    {
+    	return (1/(deviation * Math.sqrt(2 * Math.PI))) * Math.exp(- Math.pow(distance, 2) / (2 * Math.pow(deviation, 2)));
     }
 	
 }
