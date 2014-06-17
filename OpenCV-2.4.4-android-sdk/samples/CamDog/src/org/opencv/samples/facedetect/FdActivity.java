@@ -289,14 +289,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        		transPoint.y = particles[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
 		        	}
 		        	
-		        	/*double gaussDisp = new Random().nextGaussian()*deviation;
+		        	double gaussDisp = new Random().nextGaussian()*deviation;
 		        	double angle = Math.random()*2*Math.PI;
 		        	
 		        	Point newPartPoint = new Point();
 		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
-		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;*/
-		        	Core.circle(mRgba, transPoint, 2, EYES_RECT_COLOR);
-		        	particles[i].setLocation(transPoint);
+		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
+		        	Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
+		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
 	        	// create points locally to use here
