@@ -351,16 +351,21 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        // reserve an array with the likelihoods
 			        float likelihood[] = new float[mResultR.cols() * mResultR.rows()];
 			        Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
+			        Log.i("DEBUG", "mResult width: " + mResultR.width() + " mResult height: " + mResultR.height() + " * " + mResultR.width() * mResultR.height());
+			        Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
+			        Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
 			        mResultR.get(0, 0, likelihood);
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	// distance between particle and the eye
-		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
+		        	//double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
 		        	// TODO determine the likelihood based on the result matrix
 		        	
 		        	// assign likelihood of the particles location from the result matrix
-		        	int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
+		        	//int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
+		        	// relative index for the eye area
+		        	int index = ((int)(particles[i].getLocation().y - eyearea_right.y - templateR.height()) * mResultR.width() + (int)(particles[i].getLocation().x - eyearea_right.x - templateR.width()));
 		        	
 		        	double weight = (double)likelihood[index]; 
 		        	//double weight = Particle.weightGauss(distance);
