@@ -2,7 +2,7 @@ package org.opencv.samples.facedetect.particlefilter;
 
 import org.opencv.core.Point;
 
-public class Particle {
+public class Particle implements Comparable<Particle> {
 
 	private Point location;
 	private double weight;
@@ -35,5 +35,12 @@ public class Particle {
     {
     	return (1/(deviation * Math.sqrt(2 * Math.PI))) * Math.exp(- Math.pow(distance, 2) / (2 * Math.pow(deviation, 2)));
     }
+
+	@Override
+	public int compareTo(Particle another) {
+		// TODO Auto-generated method stub
+		return (int)(this.weight - another.weight);
+	}
+    
 	
 }

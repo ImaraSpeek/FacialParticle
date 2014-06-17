@@ -251,8 +251,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              	templateM = get_templateMouth(mCascadeM, moutharea,24);
              	
              	learn_frames++;
-             	// TODO make sure that templates are correct
-             	
+             	// TODO make sure that templates are correct 	
              	
              	if(learn_frames == 4) {
              		// Initialize particles for right eye
@@ -275,15 +274,34 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        else
 	        {
 	        	
-	        	// TODO resample the particles according to their assigned weight
+	        	// Resample the particles according to their assigned weight
+	        	Particle[] newParticles = new Particle[nParticles];
+	        	int iParticle = 0;
+	        	double sumWeights = particles[0].getWeight();
+	        	for (int i =0; i<nParticles; i++) {
+	        		//Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	        		if (((1.0*i)/nParticles) <= sumWeights) {
+	        			newParticles[i] = new Particle();
+	        			newParticles[i].setWeight(1.0/nParticles);
+	        			newParticles[i].setLocation(particles[iParticle].getLocation());
+	        			//Log.i("WD", "Yes");
+	        		}
+	        		else {
+	        			iParticle++;
+	        			i--;
+	        			sumWeights += particles[iParticle].getWeight();
+	        			//Log.i("WD", "No");
+	        		}
+	        		
+	        		
+	        	}
+	        	particles = newParticles;
+	        	newParticles = null;
 	        	
-	        	
-	        	
-	        	// right_eye
+	        	// Motion model right eye
 	        	for (int i = 0; i < nParticles; i++)
 	        	{
 	        		Point transPoint;
-		        	// Motion model
 		        	if (prevFace == null)
 		        	{
 		        		transPoint = particles[i].getLocation();
@@ -301,13 +319,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Point newPartPoint = new Point();
 		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
 		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
-		        	//Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
+		        	Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
 		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
 	        	// Measure all the features 
-	        	{
-		        	
 		        	// create points locally to use here
 		        	Point left_pupil = new Point();
 		        	Point right_pupil = new Point();
@@ -322,8 +338,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        
 
 			        double sumweight = 0.0;
-		        	
-	        	// TODO assign weights according to observation for right eye
+	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	// distance between particle and the eye
@@ -336,8 +351,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	particles[i].setWeight(particles[i].getWeight() / sumweight);
-		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
+		        	//Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
+		        
+		        // Make a proper estimation based on the particles
+		        // TODO
+		        
+		        
 		        /*
 		        	
 	        	// Measure distances and ratios
@@ -369,7 +389,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	
 		        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
 		        	*/
-	        	}
+	        	
 	        	
 	        	
 	        }
