@@ -47,6 +47,23 @@ obj/local/armeabi-v7a/objs/detection_based_tracker/DetectionBasedTracker_jni.o: 
  /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/core/core.hpp \
  /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp \
  /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/config.h \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/list \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/set \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp \
+ /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/iostream \
+ /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/fstream \
  /home/imara/Programs/android-ndk-r9d/platforms/android-8/arch-arm/usr/include/android/log.h
 
 jni/DetectionBasedTracker_jni.h:
@@ -144,5 +161,39 @@ jni/detection_based_tracker.hpp:
 /home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/objdetect/objdetect.hpp:
 
 /home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/deque:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/contrib.hpp:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/imgproc/imgproc.hpp:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/imgproc/types_c.h:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/core/core_c.h:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/features2d/features2d.hpp:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/miniflann.hpp:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/defines.h:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/flann/config.h:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/retina.hpp:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/valarray:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/contrib/openfabmap.hpp:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/list:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/set:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui.hpp:
+
+/home/imara/University/SmartPhoneSensing/IN4254/OpenCV-2.4.4-android-sdk/sdk/native/jni/include/opencv2/highgui/highgui_c.h:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/iostream:
+
+/home/imara/Programs/android-ndk-r9d/sources/cxx-stl/gnu-libstdc++/4.6/include/fstream:
 
 /home/imara/Programs/android-ndk-r9d/platforms/android-8/arch-arm/usr/include/android/log.h:

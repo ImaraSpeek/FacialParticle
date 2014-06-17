@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CamDog</string>
+    <string name="buttonimage">Take Image</string>
+    <string name="detect_button">Detect my face</string>
+    <string name="learn_button">Learn my face</string>
+    <string name="capture_button">Take an image</string>
+    <string name="return_button">Accept image</string>
+    <string name="retake_button">Take a new image</string>
 </resources>
