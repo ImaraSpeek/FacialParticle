@@ -258,10 +258,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              		// Initialize particles for right eye
              		for (int i = 0; i<particles.length; i++) {
              			particles[i] = new Particle();
-             			double xmin = (double)eyearea_left.x;
-             			double xmax = (double)(eyearea_left.x + eyearea_left.width);
-             			double ymin = (double)eyearea_left.y;
-             			double ymax = (double)(eyearea_left.y + eyearea_left.height);
+             			double xmin = (double)eyearea_right.x;
+             			double xmax = (double)(eyearea_right.x + eyearea_right.width);
+             			double ymin = (double)eyearea_right.y;
+             			double ymax = (double)(eyearea_right.y + eyearea_right.height);
              			//Log.i("WD", xmin + "," + xmax + "," + ymin + "," + ymax);
              			Point p = new Point(Particle.randomWithRange(xmin, xmax), 
              								Particle.randomWithRange(ymin, ymax));
@@ -301,7 +301,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Point newPartPoint = new Point();
 		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
 		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
-		        	Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
+		        	//Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
 		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
@@ -336,6 +336,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	particles[i].setWeight(particles[i].getWeight() / sumweight);
+		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
 		        /*
 		        	
