@@ -5,6 +5,7 @@ import org.opencv.core.Point;
 public class Particle {
 
 	private Point location;
+	private double weight;
 	
 	public void setLocation(Point l) {
 		location = l;
@@ -12,6 +13,14 @@ public class Particle {
 	
 	public Point getLocation() {
 		return location;
+	}
+	
+	public void setWeight(double w) {
+		weight = w;
+	}
+	
+	public double getWeight() {
+		return weight;
 	}
 	
 	// Select a random value within range for selecting particles.

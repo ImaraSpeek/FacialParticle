@@ -42,6 +42,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
 
+import java.util.*;
+
 
 @SuppressWarnings("unused")
 public class FdActivity extends Activity implements CvCameraViewListener2 {
@@ -109,6 +111,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // Particle filter variables
     private int nParticles = 1000;
     private Particle[] particles = new Particle[nParticles];
+    
+    // variable to save previous face location for motion model
+    private Point prevFace = null;
+    private double deviation = 10; 
+    
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -201,38 +208,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         
         MatOfRect 	faces = new MatOfRect();
         Rect[] 		facesArray = null;
+        
 
-        if (mAbsoluteFaceSize == 0) {// color the faces
-        	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
-        	
-        	// draw the area for the eyes
-        	Rect eyearea_left = new Rect(facesArray[0].x + facesArray[0].width/16 + (facesArray[0].width - 2 * facesArray[0].width/16)/2,(int)(facesArray[0].y + ( facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)(facesArray[0].height/3.5));
-            Rect eyearea_right = new Rect(facesArray[0].x + facesArray[0].width/16,(int)(facesArray[0].y + (facesArray[0].height/4.5)),(facesArray[0].width - facesArray[0].width/8)/2,(int)( facesArray[0].height/3.5));
-        	
-            // draw rectangles for debugging
-            Core.rectangle(mRgba, eyearea_left.tl(),eyearea_left.br() , EYES_RECT_COLOR, 2);
-            Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), EYES_RECT_COLOR, 2);
-            
-            // compute the mouth area
-	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
-	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
-            
-	        // learn the template for the features
-	        if(learn_frames<5)
-	        {
-	        	templateL = get_template(mCascadeEL,eyearea_left,24);
-             	templateR = get_template(mCascadeER,eyearea_right,24);
-             	// have to open mouth slightly for it to calibrate
-             	templateM = get_templateMouth(mCascadeM, moutharea,24);
-             	
-             	learn_frames++;
-             	// TODO make sure that templates are correct
-             	
-             	
-             	if(learn_frames == 4) {
-             		// Initialize particles for right eye
-             		for (int i = 0; i<particles.length; i++) {
-             			particles[i] = new Particle();
+        if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
             if (Math.round(height * mRelativeFaceSize) > 0) {
                 mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
@@ -289,13 +267,37 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              								Particle.randomWithRange(ymin, ymax));
              			Core.circle(mRgba, p, 2, EYES_RECT_COLOR);
              			particles[i].setLocation(p);
+             			particles[i].setWeight(1.0/particles.length);
 
              		}
              	}
             }
 	        else
 	        {
-	        	
+	        	for (int i = 0; i < nParticles; i++)
+	        	{
+	        		Point transPoint;
+		        	// Motion model
+		        	if (prevFace == null)
+		        	{
+		        		transPoint = particles[i].getLocation();
+		        	}
+		        	else
+		        	{
+		        		transPoint = new Point();
+		        		transPoint.x = particles[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
+		        		transPoint.y = particles[i].getLocation().x + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
+		        	}
+		        	
+		        	double gaussDisp = new Random().nextGaussian()*deviation;
+		        	double angle = Math.random()*2*Math.PI;
+		        	
+		        	Point newPartPoint = new Point();
+		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
+		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
+		        	Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
+		        	particles[i].setLocation(newPartPoint);
+	        	}
 	        	
 	        	// create points locally to use here
 	        	Point left_pupil = new Point();
@@ -336,8 +338,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	
 	        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
 	        	
+	        	
+	        	
 	        }
+	        
+	        // save the previous face center point
+	        prevFace = new Point(facesArray[0].x + facesArray[0].width/2, facesArray[0].y + facesArray[0].height/2);
+	        
         }
+        
         return mRgba;
     }
 
