@@ -336,12 +336,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	//hog.setSVMDetector(HOGDescriptor.getDefaultPeopleDetector());
 		        	
 		        	
-		        	// match_value is the certainty that it is the pupil
-		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, FdActivity.method); 
-		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, FdActivity.method); 
-		        	double match_valuem = match_eye(moutharea, templateM, lips, FdActivity.method);
+		        	// match_value is the squared difference normalized across the area
+		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_SQDIFF_NORMED); 
+		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_SQDIFF_NORMED); 
+		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_SQDIFF_NORMED);
 		        
-		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel);
+		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 
 			        double sumweight = 0.0;
 	        	// assign weights according to observation for right eye
