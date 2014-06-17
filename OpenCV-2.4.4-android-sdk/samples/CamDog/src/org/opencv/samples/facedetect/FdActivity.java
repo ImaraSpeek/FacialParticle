@@ -67,6 +67,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat                    mGray;
     
     private Mat                    mResult;
+    private Mat					   mResultL;
+    private Mat					   mResultR;
+    private Mat					   mResultM;
     private Mat					   templateR;
     private Mat					   templateL;
     private Mat					   templateM;
@@ -102,6 +105,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final int TM_CCOEFF_NORMED 	= 3;
     private static final int TM_CCORR 			= 4;
     private static final int TM_CCORR_NORMED 	= 5;
+    
+    private static final int RETURN_EYE_LEFT		= 0;
+    private static final int RETURN_EYE_RIGHT		= 1;
+    private static final int RETURN_MOUTH			= 2;
     
     public static int		 method				= 1;
     
@@ -337,9 +344,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	
 		        	
 		        	// match_value is the squared difference normalized across the area
-		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_SQDIFF_NORMED); 
-		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_SQDIFF_NORMED); 
-		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_SQDIFF_NORMED);
+		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_SQDIFF_NORMED, RETURN_EYE_LEFT); 
+		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_SQDIFF_NORMED, RETURN_EYE_RIGHT); 
+		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_SQDIFF_NORMED, RETURN_MOUTH);
 		        
 		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 
@@ -421,7 +428,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     
     
-    private double  match_eye(Rect area, Mat mTemplate, Point pupil_coord, int type){
+    private double  match_eye(Rect area, Mat mTemplate, Point pupil_coord, int type, int feature){
 		  Point matchLoc; 
 		  Mat mROI = mGray.submat(area);
 	      int result_cols =  mGray.cols() - mTemplate.cols() + 1;
@@ -450,6 +457,21 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			  case TM_CCORR_NORMED:
 				  Imgproc.matchTemplate(mROI, mTemplate, mResult, Imgproc.TM_CCORR_NORMED) ; 
 				  break;
+		  }
+		  // Save the return matrix with a normalized distribution 
+		  switch (feature){
+		  case RETURN_EYE_LEFT:
+			  mResultL = new Mat(result_cols,result_rows, CvType.CV_32FC1);
+			  mResultL = mResult;
+			  break;
+		  case RETURN_EYE_RIGHT:
+			  mResultR = new Mat(result_cols,result_rows, CvType.CV_32FC1);
+			  mResultR = mResult;
+			  break;
+		  case RETURN_MOUTH:
+			  mResultM = new Mat(result_cols,result_rows, CvType.CV_32FC1);
+			  mResultM = mResult;
+			  break;
 		  }
 		  
 		  Core.MinMaxLocResult mmres =  Core.minMaxLoc(mResult);
