@@ -359,16 +359,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	// distance between particle and the eye
-		        	//double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
+		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
 		        	// TODO determine the likelihood based on the result matrix
 		        	
 		        	// assign likelihood of the particles location from the result matrix
 		        	//int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
 		        	// relative index for the eye area
-		        	int index = ((int)(particles[i].getLocation().y - eyearea_right.y - templateR.height()) * mResultR.width() + (int)(particles[i].getLocation().x - eyearea_right.x - templateR.width()));
+		        	//int index = ((int)(particles[i].getLocation().y - eyearea_right.y) * mResultR.width() + (int)(particles[i].getLocation().x - eyearea_right.x ));
+		        	//int index = particles[i].getLocation().y - eyearea_right.y - 
 		        	
-		        	double weight = (double)likelihood[index]; 
-		        	//double weight = Particle.weightGauss(distance);
+		        	//double weight = (double)likelihood[index]; 
+		        	double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
 		        }
