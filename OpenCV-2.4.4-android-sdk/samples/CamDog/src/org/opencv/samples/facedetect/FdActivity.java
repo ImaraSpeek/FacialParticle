@@ -213,6 +213,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         
+        Log.i("LOG", "size of frame is: " + mRgba.cols() + " x " + mRgba.rows());
+        
         MatOfRect 	faces = new MatOfRect();
         Rect[] 		facesArray = null;
         
@@ -347,7 +349,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
 			        double sumweight = 0.0;
 			        // reserve an array with the likelihoods
-			        float likelihood[] = new float[nParticles];
+			        float likelihood[] = new float[mResultR.cols() * mResultR.rows()];
+			        Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
 			        mResultR.get(0, 0, likelihood);
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
@@ -355,17 +358,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	// distance between particle and the eye
 		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
 		        	// TODO determine the likelihood based on the result matrix
-		        	//double[] likelihood = mResultR.get((int)particles[i].getLocation().y, (int)particles[i].getLocation().x);
 		        	
 		        	// assign likelihood of the particles location from the result matrix
 		        	int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
 		        	
-		        	//float likelihood = mResultR.a
-		        	
-		        	//float elem_a= a.at<float>(i,j); 
-		        	
-		        	double weight = Particle.weightGauss(likelihood[index]);
-		  
+		        	double weight = (double)likelihood[index]; 
 		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
