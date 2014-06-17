@@ -116,133 +116,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     // Load native library after(!) OpenCV initialization
                     System.loadLibrary("detection_based_tracker");
 
-                    try {
-                    	// initialize new camshift
-                    	//cs = new CamShifting();                    	
-                    	
-                        // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
-                        InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
-                        File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
-                        FileOutputStream os = new FileOutputStream(mCascadeFile);
-
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            os.write(buffer, 0, bytesRead);
-                        }
-                        is.close();
-                        os.close();
-                        
-                        // create the native detector for opencv
-                        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
-
-                        cascadeDir.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-                    
-                    // Load left eye classifier
-                    try {
-                        // load cascade file from application resources
-                        InputStream isEL = getResources().openRawResource(R.raw.haarcascade_lefteye_2splits);
-                        File cascadeDirEL = getDir("cascade", Context.MODE_PRIVATE);
-                        File mCascadeFileEL = new File(cascadeDirEL, "haarcascade_lefteye_2splits.xml");
-                        FileOutputStream osEL = new FileOutputStream(mCascadeFileEL);
-
-                        byte[] bufferEL = new byte[4096];
-                        int bytesReadEL;
-                        while ((bytesReadEL = isEL.read(bufferEL)) != -1) {
-                            osEL.write(bufferEL, 0, bytesReadEL);
-                        }
-                        isEL.close();
-                        osEL.close();
-                        
-                        // This part is for the java cascade classifier to search within region
-                        mCascadeEL = new CascadeClassifier(mCascadeFileEL.getAbsolutePath());
-                        if (mCascadeEL.empty()) {
-                            Log.e(TAG, "Failed to load eye cascade classifier");
-                            mCascadeEL = null;
-                        } else
-                        {
-                            Log.i(TAG, "Loaded EL cascade classifier from " + mCascadeFileEL.getAbsolutePath());
-                        }
-                        
-                        cascadeDirEL.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-                    
-                    // Load right eye classifier
-                    try {
-                        // load cascade file from application resources
-                        InputStream isER = getResources().openRawResource(R.raw.haarcascade_righteye_2splits);
-                        File cascadeDirER = getDir("cascade", Context.MODE_PRIVATE);
-                        File mCascadeFileER = new File(cascadeDirER, "haarcascade_righteye_2splits.xml");
-                        FileOutputStream osER = new FileOutputStream(mCascadeFileER);
-
-                        byte[] bufferER = new byte[4096];
-                        int bytesReadER;
-                        while ((bytesReadER = isER.read(bufferER)) != -1) {
-                            osER.write(bufferER, 0, bytesReadER);
-                        }
-                        isER.close();
-                        osER.close();
-                        
-                        // This part is for the java cascade classifier to search within region
-                        mCascadeER = new CascadeClassifier(mCascadeFileER.getAbsolutePath());
-                        if (mCascadeER.empty()) {
-                            Log.e(TAG, "Failed to load eye cascade classifier");
-                            mCascadeER = null;
-                        } else
-                        {
-                            Log.i(TAG, "Loaded ER cascade classifier from " + mCascadeFileER.getAbsolutePath());
-                        }
-                        
-                        cascadeDirER.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-                    
-                    // Load the mouth classifier                   
-                    try {
-                        // load cascade file from application resources
-                        InputStream isM = getResources().openRawResource(R.raw.haarcascade_mcs_mouth);
-                        File cascadeDirM = getDir("cascade", Context.MODE_PRIVATE);
-                        File mCascadeFileM = new File(cascadeDirM, "haarcascade_mcs_mouth.xml");
-                        FileOutputStream osM = new FileOutputStream(mCascadeFileM);
-
-                        byte[] bufferM = new byte[4096];
-                        int bytesReadM;
-                        while ((bytesReadM = isM.read(bufferM)) != -1) {
-                            osM.write(bufferM, 0, bytesReadM);
-                        }
-                        isM.close();
-                        osM.close();
-                        
-                        // This part is for the java cascade classifier to search within region
-                        mCascadeM = new CascadeClassifier(mCascadeFileM.getAbsolutePath());
-                        if (mCascadeM.empty()) {
-                            Log.e(TAG, "Failed to load eye cascade classifier");
-                            mCascadeM = null;
-                        } else
-                        {
-                            Log.i(TAG, "Loaded M cascade classifier from " + mCascadeFileM.getAbsolutePath());
-                        }
-                        
-                        cascadeDirM.delete();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
-                    }
-
+                    load_cascade();
                     // enable the opencv camera
                     mOpenCvCameraView.enableView();
                 } break;
@@ -564,4 +438,136 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mAbsoluteFaceSize = 0;
     }
 
+    public void load_cascade()
+    {
+
+        try {
+        	// initialize new camshift
+        	//cs = new CamShifting();                    	
+        	
+            // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
+            InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+            mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+            FileOutputStream os = new FileOutputStream(mCascadeFile);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            is.close();
+            os.close();
+            
+            // create the native detector for opencv
+            mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+
+            cascadeDir.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+        }
+        
+        // Load left eye classifier
+        try {
+            // load cascade file from application resources
+            InputStream isEL = getResources().openRawResource(R.raw.haarcascade_lefteye_2splits);
+            File cascadeDirEL = getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFileEL = new File(cascadeDirEL, "haarcascade_lefteye_2splits.xml");
+            FileOutputStream osEL = new FileOutputStream(mCascadeFileEL);
+
+            byte[] bufferEL = new byte[4096];
+            int bytesReadEL;
+            while ((bytesReadEL = isEL.read(bufferEL)) != -1) {
+                osEL.write(bufferEL, 0, bytesReadEL);
+            }
+            isEL.close();
+            osEL.close();
+            
+            // This part is for the java cascade classifier to search within region
+            mCascadeEL = new CascadeClassifier(mCascadeFileEL.getAbsolutePath());
+            if (mCascadeEL.empty()) {
+                Log.e(TAG, "Failed to load eye cascade classifier");
+                mCascadeEL = null;
+            } else
+            {
+                Log.i(TAG, "Loaded EL cascade classifier from " + mCascadeFileEL.getAbsolutePath());
+            }
+            
+            cascadeDirEL.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+        }
+        
+        // Load right eye classifier
+        try {
+            // load cascade file from application resources
+            InputStream isER = getResources().openRawResource(R.raw.haarcascade_righteye_2splits);
+            File cascadeDirER = getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFileER = new File(cascadeDirER, "haarcascade_righteye_2splits.xml");
+            FileOutputStream osER = new FileOutputStream(mCascadeFileER);
+
+            byte[] bufferER = new byte[4096];
+            int bytesReadER;
+            while ((bytesReadER = isER.read(bufferER)) != -1) {
+                osER.write(bufferER, 0, bytesReadER);
+            }
+            isER.close();
+            osER.close();
+            
+            // This part is for the java cascade classifier to search within region
+            mCascadeER = new CascadeClassifier(mCascadeFileER.getAbsolutePath());
+            if (mCascadeER.empty()) {
+                Log.e(TAG, "Failed to load eye cascade classifier");
+                mCascadeER = null;
+            } else
+            {
+                Log.i(TAG, "Loaded ER cascade classifier from " + mCascadeFileER.getAbsolutePath());
+            }
+            
+            cascadeDirER.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+        }
+        
+        // Load the mouth classifier                   
+        try {
+            // load cascade file from application resources
+            InputStream isM = getResources().openRawResource(R.raw.haarcascade_mcs_mouth);
+            File cascadeDirM = getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFileM = new File(cascadeDirM, "haarcascade_mcs_mouth.xml");
+            FileOutputStream osM = new FileOutputStream(mCascadeFileM);
+
+            byte[] bufferM = new byte[4096];
+            int bytesReadM;
+            while ((bytesReadM = isM.read(bufferM)) != -1) {
+                osM.write(bufferM, 0, bytesReadM);
+            }
+            isM.close();
+            osM.close();
+            
+            // This part is for the java cascade classifier to search within region
+            mCascadeM = new CascadeClassifier(mCascadeFileM.getAbsolutePath());
+            if (mCascadeM.empty()) {
+                Log.e(TAG, "Failed to load eye cascade classifier");
+                mCascadeM = null;
+            } else
+            {
+                Log.i(TAG, "Loaded M cascade classifier from " + mCascadeFileM.getAbsolutePath());
+            }
+            
+            cascadeDirM.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
+        }
+
+    	
+    }
 }
