@@ -35,6 +35,11 @@ public class Particle implements Comparable<Particle> {
     {
     	return (1/(deviation * Math.sqrt(2 * Math.PI))) * Math.exp(- Math.pow(distance, 2) / (2 * Math.pow(deviation, 2)));
     }
+    
+    public static double Gauss(double distance, double sigma)
+    {
+    	return (1/(sigma * Math.sqrt(2 * Math.PI))) * Math.exp(- Math.pow(distance, 2) / (2 * Math.pow(sigma, 2)));
+    }
 
 	@Override
 	public int compareTo(Particle another) {

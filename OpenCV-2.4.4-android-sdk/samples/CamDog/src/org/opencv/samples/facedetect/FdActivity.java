@@ -31,6 +31,7 @@ import org.opencv.samples.facedetect.particlefilter.Particle;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap.CompressFormat;
@@ -49,6 +50,9 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class FdActivity extends Activity implements CvCameraViewListener2 {
+	
+	
+	public static final String PREFS_NAME = "MyTrainedFace";
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
@@ -127,6 +131,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     private boolean train = false;
     
+    // a array of size 2 to save the mean and the sigma of the ratios for training
+    private double[] ratios = new double[2];
+    private int traincounter = 0;
+    private double[] traindata = new double[100];
+
+    
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -176,6 +186,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.face_detect_surface_view);
+      
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -488,6 +499,45 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        double ratio = interoccular / moutheyes;
 		        	
 		        Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
+		        
+		        
+	        	//********************************************************************************************************************************/
+	        	//                                                             TRAIN                                                              /
+	        	//********************************************************************************************************************************/
+		        
+		        // TODO save the values in a database
+		        if (train)
+		        {
+		        	if (traincounter >= 100)
+		        	{
+		        		double average = 0.0;
+		        		double threshold = 20;
+		        		
+		        		// enough training samples collected, determine the mean
+		        		for (int r = 0; r < 100; r++)
+		        		{
+		        			average =+ traindata[r];
+		        		}
+		        		average = average / 100;
+		        		
+		        		// determine variance
+		                double temp = 0;
+		                for(int r = 0; r < 100; r++)
+		                {
+		                    temp += (average-traindata[r])*(average-traindata[r]);
+		                }
+		                double variance = temp / 100;
+		        		
+		                // set training variables back to 0
+		        		traincounter = 0;
+		        		train = false;
+		        	}
+		        	else
+		        	{
+			        	traindata[traincounter] = ratio;
+			        	traincounter++;
+		        	}
+		        }
 		        	
 	        	
 	        	
