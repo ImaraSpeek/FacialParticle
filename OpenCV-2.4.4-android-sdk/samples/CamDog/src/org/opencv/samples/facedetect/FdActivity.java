@@ -64,6 +64,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    RIGHT_PIXEL_COLOR   = new Scalar(219, 39, 156, 255);
     private static final Scalar    MOUTH_PIXEL_COLOR   = new Scalar(219, 90, 39, 255);
     
+    private static final Scalar    PUPIL_COLOR		   = new Scalar(255,255,255,255);
+    
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -532,22 +534,35 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        
 		        // Sort the particles to make an estimation from the top particles' average
 		        Arrays.sort(particlesR);
-		        Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
+		        Arrays.sort(particlesL);
+		        //Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
 		        
 		        // Make a proper estimation based on the particles
-		        Point estimate = new Point();
-		        double weightnorm = 0.0;
+		        Point estimateR = new Point();
+		        Point estimateL = new Point();
+		        double weightnormR = 0.0;
+		        double weightnormL = 0.0;
 		        // set the average for the best 100 particles
 		        for (int i = 0; i < nParticles/10; i ++)
 		        {
-		        	estimate.x += (particlesR[i].getLocation().x * particlesR[i].getWeight());
-		        	estimate.y += (particlesR[i].getLocation().y * particlesR[i].getWeight());
-		        	weightnorm += particlesR[i].getWeight();
+		        	// Right
+		        	estimateR.x += (particlesR[i].getLocation().x * particlesR[i].getWeight());
+		        	estimateR.y += (particlesR[i].getLocation().y * particlesR[i].getWeight());
+		        	weightnormR += particlesR[i].getWeight();
+		        	// Left
+		        	estimateL.x += (particlesL[i].getLocation().x * particlesL[i].getWeight());
+		        	estimateL.y += (particlesL[i].getLocation().y * particlesL[i].getWeight());
+		        	weightnormL += particlesL[i].getWeight();
 		        }
 		        // average the position of the estimate
-		        estimate.x = estimate.x / weightnorm;
-		        estimate.y = estimate.y / weightnorm;
-		        Core.circle(mRgba, estimate, 5, MOUTH_RECT_COLOR, 5);
+		        // Right
+		        estimateR.x = estimateR.x / weightnormR;
+		        estimateR.y = estimateR.y / weightnormR;
+		        // Left
+		        estimateL.x = estimateL.x / weightnormL;
+		        estimateL.y = estimateL.y / weightnormL;
+		        Core.circle(mRgba, estimateR, 5, PUPIL_COLOR, 4);
+		        Core.circle(mRgba, estimateL, 5, PUPIL_COLOR, 4);
 		        
 		        
 		        
