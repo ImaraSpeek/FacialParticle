@@ -1,5 +1,6 @@
 package com.watchdog;
 
+import com.watchdog.ApplicationState.ConnectedDevice;
 import com.watchdog.R;
 
 import android.app.Activity;
@@ -21,9 +22,11 @@ public class MainActivity extends Activity {
 	private TextView lblState;
 	private Button btnLoc;
 	private Button btnStopServices;
+	private TextView lblDevices;
 	
 	// Receivers
 	BroadcastReceiver stateChangedReceiver;
+	BroadcastReceiver lockedChangedReceiver;
 	
 	
 	@Override
@@ -68,6 +71,7 @@ public class MainActivity extends Activity {
 		});
 		
 		lblState = (TextView) findViewById(R.id.lblState);
+		lblDevices = (TextView) findViewById(R.id.lblLockedDevices);
 		
 		stateChangedReceiver = new BroadcastReceiver() {
 	        @Override
@@ -75,9 +79,22 @@ public class MainActivity extends Activity {
 	            updateState();
 	        }
 	    };
+	    
+	    lockedChangedReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				updateState();
+			}
+	    };
 	}
 	
 	private void updateState() {
+		String lbl = "Locked devices:\n";
+		for (ConnectedDevice d : ApplicationState.getInstance(getApplicationContext()).getLockedDevices().values()) {
+			lbl += d.name + " (" + (System.currentTimeMillis()-d.lastSeen) + " ms)\n";
+		}
+		lblDevices.setText(lbl);
+		
 		switch (ApplicationState.getInstance(getApplicationContext()).getState()) {
 		case ApplicationState.LOCK_STATE_UNLOCKED:
 			lblState.setText(getString(R.string.lbl_state_unlocked));
@@ -101,12 +118,14 @@ public class MainActivity extends Activity {
 	protected void onStart() {
 	    super.onStart();
 	    LocalBroadcastManager.getInstance(this).registerReceiver(stateChangedReceiver, new IntentFilter(ApplicationState.BROADCAST_LOCK_STATE_CHANGED));
+	    LocalBroadcastManager.getInstance(this).registerReceiver(lockedChangedReceiver, new IntentFilter(ApplicationState.BROADCAST_LOCKED_DEVICES_CHANGED));
 	    updateState();
 	}
 
 	@Override
 	protected void onStop() {
 	    LocalBroadcastManager.getInstance(this).unregisterReceiver(stateChangedReceiver);
+	    LocalBroadcastManager.getInstance(this).unregisterReceiver(lockedChangedReceiver);
 	    super.onStop();
 	}
 

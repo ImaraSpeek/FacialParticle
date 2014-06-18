@@ -57,13 +57,29 @@ public class ApplicationState {
 		return lockedDevices.get(mac).name;
 	}
 	
+	public boolean getLockedDeviceStolen(String mac) {
+		return lockedDevices.get(mac).maybeStolen || lockedDevices.get(mac).stolen;
+	}
+	
+	public void setLockedDeviceMaybeStolen(String mac, boolean maybeStolen) {
+		lockedDevices.get(mac).maybeStolen = maybeStolen;
+	}
+	
+	public long getLockedDeviceLastSeen(String mac) {
+		return lockedDevices.get(mac).lastSeen;
+	}
+	
 	public void setLockedDeviceLastSeen(String mac, long time) {
 		lockedDevices.get(mac).lastSeen = time;
+		Intent stateChangedIntent = new Intent(BROADCAST_LOCKED_DEVICES_CHANGED);
+	    broadcaster.sendBroadcast(stateChangedIntent);
 	}
 	
 	public static class ConnectedDevice {
 		public String name;
 		public long lastSeen;
+		public boolean maybeStolen = false;
+		public boolean stolen = false;
 		public ConnectedDevice(String name, long lastSeen) {
 			this.name = name;
 			this.lastSeen = lastSeen;

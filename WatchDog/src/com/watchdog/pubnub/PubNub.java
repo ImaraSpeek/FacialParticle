@@ -27,9 +27,6 @@ public class PubNub {
 	}
 	
 	private PubNub() {
-	}
-	
-	public void subscribe() {
 		try {
 	    	pubnub.subscribe("WatchDogChannel", callback);
 	    } catch (PubnubException e) {
@@ -59,7 +56,7 @@ public class PubNub {
 		@Override
 		public void successCallback(String channel, Object message) {
 			Log.d("PUBNUB",
-					"SUBSCRIBE : " + channel + " : " + message.getClass()
+					"SUBSCRIBE : RECEIVE on channel : " + channel + " : " + message.getClass()
 							+ " : " + message.toString());
 			String res;
 			try {
@@ -97,7 +94,14 @@ public class PubNub {
 	}
 	
 	public void sendMessage(String message) {
-		pubnub.publish("WatchDogChannel", message, null);
+		Callback callback = new Callback() {
+			public void successCallback(String channel, Object response) { }
+			public void errorCallback(String channel, PubnubError error) { }
+		};
+		Log.d("PUBNUB",
+				"SUBSCRIBE : SEND on channel : WatchDogChannel : " + message.getClass()
+						+ " : " + message.toString());
+		pubnub.publish("WatchDogChannel", message, callback);
 	}
 	
 	public interface PubNubReceiver {

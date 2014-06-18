@@ -1,5 +1,6 @@
 package com.watchdog;
 
+import com.watchdog.ApplicationState.ConnectedDevice;
 import com.watchdog.pubnub.PubNub;
 import com.watchdog.pubnub.PubNub.PubNubReceiver;
 
@@ -73,6 +74,7 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 		
 		// Initialize PubNub
 		pubnub = PubNub.getInstance();
+		pubnub.addReceiver(this);
 		
 		// Initialize wakelock
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -83,6 +85,12 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		
+		// Request discoverability
+		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+		discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		getApplication().startActivity(discoverableIntent);
 		
 		Log.i(TAG, "Going into LOCKING state");
 		appState.setState(ApplicationState.LOCK_STATE_LOCKING);
@@ -195,7 +203,21 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 
 	@Override
 	public void onReceiveMessage(String message) {
-		
+		String firstPart = message.split("@")[0];
+		if (firstPart.equals("LOCKED?")) {
+			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+			String mac = message.split("@")[1];
+			if (mac.equals(adapter.getAddress())) {
+				pubnub.sendMessage("LOCKED!@" + mac + "@" + adapter.getName());
+			}
+		}
+		else if (firstPart.equals("STOLEN?")) {
+			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+			String mac = message.split("@")[1];
+			if (mac.equals(adapter.getAddress())) {
+				pubnub.sendMessage("NO!@" + mac + "@" + adapter.getName());
+			}
+		}
 	}
 
 
