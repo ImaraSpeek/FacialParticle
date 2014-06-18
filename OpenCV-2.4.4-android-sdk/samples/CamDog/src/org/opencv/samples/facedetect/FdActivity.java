@@ -454,7 +454,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	
 		        	//Core.circle(mRgba, newPartPointR, 2, RIGHT_PIXEL_COLOR);
 		        	//Core.circle(mRgba, newPartPointL, 2, LEFT_PIXEL_COLOR);
-		        	Core.circle(mRgba, newPartPointM, 2, MOUTH_PIXEL_COLOR);
+		        	//Core.circle(mRgba, newPartPointM, 2, MOUTH_PIXEL_COLOR);
 		        	
 		        	particlesR[i].setLocation(newPartPointR);
 		        	particlesL[i].setLocation(newPartPointL);
@@ -490,16 +490,23 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			       
 		        	double sumweightR = 0.0;   
 		        	double sumweightL = 0.0;   
+		        	double sumweightM = 0.0;   
 		        	// assign weights according to observation for right eye
 			        for (int i = 0; i< nParticles; i++)
 			        {
 			        	// distance between particle and the eye
 			        	double distanceR = Math.sqrt(Math.pow(particlesR[i].getLocation().x - right_pupil.x, 2) + Math.pow(particlesR[i].getLocation().y - right_pupil.y, 2));
 			        	double distanceL = Math.sqrt(Math.pow(particlesL[i].getLocation().x - left_pupil.x, 2) + Math.pow(particlesL[i].getLocation().y - left_pupil.y, 2));
+			        	double distanceM = Math.sqrt(Math.pow(particlesM[i].getLocation().x - lips.x, 2) + Math.pow(particlesM[i].getLocation().y - lips.y, 2));
 				        
 			        	// likelihood determinization
 			        	double[] likelihoodR = new double[1];
 			        	double[] likelihoodL = new double[1];
+			        	double[] likelihoodM = new double[1];
+			        	
+			        	// make sure that all weights are assigned actual numbers, as Result matrix does not return numbers for
+			        	// any values outside of the region of interest
+			        	
 			        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
 			        	if (mResultR != null)
 				        {
@@ -518,6 +525,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 				        		weightR = likelihoodR[0];
 				        	}
 			        	}
+				        
 				        // LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT 
 			        	if (mResultL != null)
 				        {
@@ -536,21 +544,46 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 				        		weightL = likelihoodL[0];
 				        	}
 			        	}
+				        
+				        // MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
+			        	if (mResultM != null)
+				        {
+				        	likelihoodM = mResultM.get((int)(particlesM[i].getLocation().y - moutharea.y), (int)(particlesM[i].getLocation().x - moutharea.x)); 
+				        }
+			        	double weightM = 0.0;
+				        if (likelihoodM != null)
+			        	{
+				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
+				        	if (likelihoodM[0] <= 0.0)
+				        	{
+				        		weightM = 0.0;
+				        	}
+				        	else 
+				        	{
+				        		weightM = likelihoodM[0];
+				        	}
+			        	}
+				        
 				        // add the Gaussian distrubutian of the most likely pupil
 			        	weightR += Particle.weightGauss(distanceR) * 200;
 			        	weightL += Particle.weightGauss(distanceL) * 200;
+			        	weightM += Particle.weightGauss(distanceM) * 200;
 			        	particlesR[i].setWeight(weightR);
 			        	particlesL[i].setWeight(weightL);
+			        	particlesM[i].setWeight(weightM);
 			        	sumweightR += weightR;
 			        	sumweightL += weightL;
+			        	sumweightM += weightM;
 			        }
 			        // normalize the weight
 			        for (int i = 0; i< nParticles; i++)
 			        {
 			        	particlesR[i].setWeight(particlesR[i].getWeight() / sumweightR);
 			        	particlesL[i].setWeight(particlesL[i].getWeight() / sumweightL);
+			        	particlesM[i].setWeight(particlesM[i].getWeight() / sumweightM);
 			        	Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), RIGHT_PIXEL_COLOR);
 			        	Core.circle(mRgba, particlesL[i].getLocation(), (int)(particlesL[i].getWeight()* 1000), LEFT_PIXEL_COLOR);
+			        	Core.circle(mRgba, particlesM[i].getLocation(), (int)(particlesM[i].getWeight()* 1000), MOUTH_PIXEL_COLOR);
 			        }
 		        
 
