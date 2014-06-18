@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
 	private Button btnLock;
 	private TextView lblState;
 	private Button btnLoc;
+	private Button btnStopServices;
 	
 	// Receivers
 	BroadcastReceiver stateChangedReceiver;
@@ -30,6 +31,11 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
+		
+		// Start Watch service
+		Intent watchIntent = new Intent(MainActivity.this, WatchService.class);
+		startService(watchIntent);
+		
 		
 		btnLock = (Button) findViewById(R.id.btnLock);
 		btnLock.setOnClickListener(new OnClickListener() {
@@ -46,6 +52,18 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				Intent locIntent = new Intent(MainActivity.this, LocalizationActivity.class);
 				startActivity(locIntent);
+			}
+		});
+		
+		btnStopServices = (Button) findViewById(R.id.btnStopServices);
+		btnStopServices.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent lockIntent = new Intent(MainActivity.this, LockedService.class);
+				stopService(lockIntent);
+				
+				Intent watchIntent = new Intent(MainActivity.this, WatchService.class);
+				stopService(watchIntent);
 			}
 		});
 		

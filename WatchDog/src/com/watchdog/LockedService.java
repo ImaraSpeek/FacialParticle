@@ -1,5 +1,8 @@
 package com.watchdog;
 
+import com.watchdog.pubnub.PubNub;
+import com.watchdog.pubnub.PubNub.PubNubReceiver;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +15,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
 
-public class LockedService extends Service implements SensorEventListener {
+public class LockedService extends Service implements SensorEventListener, PubNubReceiver {
 	
 	// Application state
 	private ApplicationState appState;
@@ -24,6 +27,8 @@ public class LockedService extends Service implements SensorEventListener {
 	private Thread t;
 	// Wakelock
 	private WakeLock wakeLock;
+	// PubNub
+	private PubNub pubnub;
 	
 	// Sensor variables
 	private SensorManager sensorManager;
@@ -64,6 +69,9 @@ public class LockedService extends Service implements SensorEventListener {
 		Log.i(TAG, "LockedService started");
 		
 		appState = ApplicationState.getInstance(getApplicationContext());
+		
+		// Initialize PubNub
+		pubnub = PubNub.getInstance();
 		
 		// Initialize wakelock
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -160,8 +168,12 @@ public class LockedService extends Service implements SensorEventListener {
 	
 	@Override
 	public void onDestroy() {
+		try {
+            wakeLock.release();
+            pubnub.unsubscribe();
+        } catch (Throwable th) { }
+		Log.i(TAG, "LockedService stopped");
 		super.onDestroy();
-		wakeLock.release();
 	}
 	
 	@Override
@@ -172,6 +184,11 @@ public class LockedService extends Service implements SensorEventListener {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
+	}
+
+	@Override
+	public void onReceiveMessage(String message) {
+		
 	}
 
 }

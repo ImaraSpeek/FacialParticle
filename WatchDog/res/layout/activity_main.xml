@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:text="Localization" />
 
+    <Button
+        android:id="@+id/btnStopServices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop all services" />
+
     <TextView
         android:id="@+id/lblState"
         android:layout_width="wrap_content"
