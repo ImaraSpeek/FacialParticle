@@ -125,6 +125,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Point prevFace = null;
     private double deviation = 10; 
     
+    private boolean train = false;
+    
     
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -253,6 +255,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
 	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
             
+	        
+
+        	//********************************************************************************************************************************/
+        	//                                                          INITIALIZATION                                                        /
+        	//********************************************************************************************************************************/
+	        
 	        // learn the template for the features
 	        if(learn_frames<5)
 	        {
@@ -284,6 +292,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
 	        else
 	        {
+	        	//********************************************************************************************************************************/
+	        	//                                                          RESAMPLING                                                            /
+	        	//********************************************************************************************************************************/
 	        	
 	        	// Resample the particles according to their assigned weight
 	        	Particle[] newParticles = new Particle[nParticles];
@@ -312,6 +323,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	particles = newParticles;
 	        	newParticles = null;
 	        	
+	        	
+
+	        	//********************************************************************************************************************************/
+	        	//                                                        MOTION MODEL                                                            /
+	        	//********************************************************************************************************************************/
+	        	
 	        	// Motion model right eye
 	        	for (int i = 0; i < nParticles; i++)
 	        	{
@@ -337,6 +354,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	particles[i].setLocation(newPartPoint);
 	        	}
 	        	
+	        	
+
+	        	//********************************************************************************************************************************/
+	        	//                                                          OBSERVATION                                                           /
+	        	//********************************************************************************************************************************/
+	        	
 	        	// Measure all the features 
 		        	// create points locally to use here
 		        	Point left_pupil = new Point();
@@ -359,6 +382,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        //Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
 			        //Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
 			        // mResultR.get(0, 0, likelihood);
+			        
+
+		        	//********************************************************************************************************************************/
+		        	//                                                          ASSIGN WEIGHTS                                                        /
+		        	//********************************************************************************************************************************/    
+			        
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
@@ -396,6 +425,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
 		        
+
+		        
+	        	//********************************************************************************************************************************/
+	        	//                                                          ESTIMATE                                                              /
+	        	//********************************************************************************************************************************/
+		        
 		        // Sort the particles to make an estimation from the top particles' average
 		        Arrays.sort(particles);
 		        Log.i("DEBUG", "particle[0]: " + particles[0].getWeight() + " particle[999]: " + particles[999].getWeight());
@@ -416,45 +451,51 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        Core.circle(mRgba, estimate, 5, MOUTH_RECT_COLOR, 5);
 		        
 		        
-		        /*
+		        
+
+	        	//********************************************************************************************************************************/
+	        	//                                                          VERIFICATION                                                          /
+	        	//********************************************************************************************************************************/
 		        	
 	        	// Measure distances and ratios
 	        	
-	        		//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
-	        		
-		        	//Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
-		        	//Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
-		        	Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
-		        	
-		        	// determine horizontal and vertical distances
-		        	double eyex = Math.abs(left_pupil.x - right_pupil.x);
-		        	double eyey = Math.abs(left_pupil.y - right_pupil.y);
-		        	// determine the x by subtracting half of the width from the farthest x coordinate
-		        	middle_pupil.x = left_pupil.x - (eyex / 2);
-		        	middle_pupil.y = left_pupil.y - (eyey / 2);
-		        	
-		        	Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
-		        	
-		        	// determine the horizontal and vertical distances from middle of the eyes to the mouth
-		        	double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
-		        	double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
+	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
+	        	
+		        //Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
+		        //Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
+		        Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
+		        
+		        // determine horizontal and vertical distances
+		        double eyex = Math.abs(left_pupil.x - right_pupil.x);
+		        double eyey = Math.abs(left_pupil.y - right_pupil.y);
+		        // determine the x by subtracting half of the width from the farthest x coordinate
+		        middle_pupil.x = left_pupil.x - (eyex / 2);
+		        middle_pupil.y = left_pupil.y - (eyey / 2);
+		        
+		        Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
+		        
+		        // determine the horizontal and vertical distances from middle of the eyes to the mouth
+		        double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
+		        double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
 	
-		        	Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
+		        Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
 		        	
-		        	// pythagoras
-		        	double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
-		        	double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	        	
+		        // pythagoras
+		        double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
+		        double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	     
+		        
+		        // actual ratio
+		        double ratio = interoccular / moutheyes;
 		        	
-		        	Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes);
-		        	*/
+		        Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
+		        	
 	        	
 	        	
 	        	
 	        }
 	        
 	        // save the previous face center point
-	        prevFace = new Point(facesArray[0].x + facesArray[0].width/2, facesArray[0].y + facesArray[0].height/2);
-	        
+	        prevFace = new Point(facesArray[0].x + facesArray[0].width/2, facesArray[0].y + facesArray[0].height/2);       
         }
         
         return mRgba;
@@ -624,7 +665,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             setMinFaceSize(0.2f);
         else if (item == mItemTrain)
         {
-        	// TODO train
+        	train = true;
+        }
+        else
+        {
+        	train = false;
         }
         return true;
     }
