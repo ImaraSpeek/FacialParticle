@@ -134,7 +134,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // a array of size 2 to save the mean and the sigma of the ratios for training
     private double[] ratios = new double[2];
     private int traincounter = 0;
-    private double[] traindata = new double[100];
+    private int nSamples = 100;
+    private double[] traindata = new double[nSamples];
 
     
     
@@ -407,8 +408,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        
 		        	// likelihood determinization
 		        	double[] likelihood = new double[1];
-		        	likelihood = mResultR.get((int)(particles[i].getLocation().y - eyearea_right.y), (int)(particles[i].getLocation().x - eyearea_right.x)); 
-		        	
+		        	if (mResultR != null)
+			        {
+			        	likelihood = mResultR.get((int)(particles[i].getLocation().y - eyearea_right.y), (int)(particles[i].getLocation().x - eyearea_right.x)); 
+			        }
 		        	double weight = 0.0;
 			        if (likelihood != null)
 		        	{
@@ -508,26 +511,26 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // TODO save the values in a database
 		        if (train)
 		        {
-		        	if (traincounter >= 100)
+		        	Log.i("DEBUG", "im in the train loop");
+		        	if (traincounter >= nSamples)
 		        	{
 		        		double average = 0.0;
-		        		double threshold = 20;
-		        		
 		        		// enough training samples collected, determine the mean
-		        		for (int r = 0; r < 100; r++)
+		        		for (int r = 0; r < nSamples; r++)
 		        		{
 		        			average =+ traindata[r];
 		        		}
-		        		average = average / 100;
+		        		average = average / nSamples;
 		        		
 		        		// determine variance
 		                double temp = 0;
-		                for(int r = 0; r < 100; r++)
+		                for(int r = 0; r < nSamples; r++)
 		                {
 		                    temp += (average-traindata[r])*(average-traindata[r]);
 		                }
-		                double variance = temp / 100;
+		                double variance = temp / (nSamples - 1);
 		        		
+		                Log.i("ratio", "mean: " + average + "variance: " + variance);
 		                // set training variables back to 0
 		        		traincounter = 0;
 		        		train = false;
@@ -535,6 +538,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	else
 		        	{
 			        	traindata[traincounter] = ratio;
+			        	Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
 			        	traincounter++;
 		        	}
 		        }
