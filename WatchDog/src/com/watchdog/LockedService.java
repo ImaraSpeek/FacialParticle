@@ -44,6 +44,8 @@ public class LockedService extends Service implements SensorEventListener {
 	private long calibrationTime = 5000; // ms
 	private double maxAccValue = -1;
 	private int calibrationFactor = 4;
+	private long startThresholdPass = -1;
+	private int bumpTime = 500; // ms
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -106,7 +108,7 @@ public class LockedService extends Service implements SensorEventListener {
 				}
 				if (timeLastMsrAboveCalibrationThreshold > 0 
 						&& (System.currentTimeMillis() - timeLastMsrAboveCalibrationThreshold) > calibrationThresholdTime) {
-					// Acceleration has not been above "calibrtionThreshold" for "calibrationThresholdTime" ms, so go to calibration
+					// Acceleration has not been above "calibrationThreshold" for "calibrationThresholdTime" ms, so go to calibration
 					Log.i(TAG, "Going into CALIBRATING state");
 					appState.setState(ApplicationState.LOCK_STATE_CALIBRATING);
 				}
@@ -127,16 +129,27 @@ public class LockedService extends Service implements SensorEventListener {
 			}
 			if (appState.getState() == ApplicationState.LOCK_STATE_LOCKED) {
 				if (acc > threshold) {
-					Log.i(TAG, "Threshold passed, strting unlock activity");
-					// Threshold passed, start unlock activity
-					Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
-					unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					getApplication().startActivity(unlockIntent);
-					// Release listener, wakelock and stop service
-					sensorManager.unregisterListener(this);
-					wakeLock.release();
-					Log.i(TAG, "Stopping LockedService");
-					stopSelf();
+					// Phone moved
+					if (startThresholdPass < 0) {
+						// Just passed threshold, save the time
+						startThresholdPass = System.currentTimeMillis();
+					}
+					else if ((System.currentTimeMillis() - startThresholdPass) > bumpTime) {
+						// Movement has been longer than bumpTime, start unlock activity
+						Log.i(TAG, "Threshold passed, starting unlock activity");
+						Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
+						unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						getApplication().startActivity(unlockIntent);
+						// Release listener, wakelock and stop service
+						sensorManager.unregisterListener(this);
+						wakeLock.release();
+						Log.i(TAG, "Stopping LockedService");
+						stopSelf();
+					}
+				}
+				else if (startThresholdPass > 0) {
+					// No movement, reset startThresholdPass
+					startThresholdPass = -1;
 				}
 			}
 		}
@@ -144,6 +157,12 @@ public class LockedService extends Service implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		wakeLock.release();
+	}
 	
 	@Override
 	public void onCreate() {
