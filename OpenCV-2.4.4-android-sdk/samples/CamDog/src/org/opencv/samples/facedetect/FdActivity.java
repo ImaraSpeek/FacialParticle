@@ -287,6 +287,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	Particle[] newParticles = new Particle[nParticles];
 	        	int iParticle = 0;
 	        	double sumWeights = particles[0].getWeight();
+	        	
+	        	/*
 	        	for (int i =0; i<nParticles; i++) {
 	        		//Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
 	        		if (((1.0*i)/nParticles) <= sumWeights) {
@@ -301,9 +303,28 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        			sumWeights += particles[iParticle].getWeight();
 	        			//Log.i("WD", "No");
 	        		}
-	        		
-	        		
 	        	}
+	        	*/
+
+	        	
+	        	int p = 0;
+	            while (p<nParticles) 
+	            {
+			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+			        if (((1.0*p)/nParticles) <= sumWeights) {
+				        newParticles[p] = new Particle();
+				        newParticles[p].setWeight(1.0/nParticles);
+				        newParticles[p].setLocation(particles[iParticle].getLocation());
+				        p++;
+				        //Log.i("WD", "Yes");
+				    }
+			        else 
+			        {
+				        iParticle++;
+				        sumWeights += particles[iParticle].getWeight();
+				        //Log.i("WD", "No");
+			       }
+	            }
 	        	particles = newParticles;
 	        	newParticles = null;
 	        	
@@ -368,7 +389,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        if (likelihood != null)
 		        	{
 			        	Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-			        	if (likelihood[0] < 0.0)
+			        	if (likelihood[0] <= 0.0)
 			        	{
 			        		weight = 0.0;
 			        	}
@@ -377,7 +398,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        		weight = likelihood[0];
 			        	}
 		        	}
-		        	
+			        // add the Gaussian distrubutian of the most likely pupil
+		        	weight += Particle.weightGauss(distance) * 100;
+		        	Log.i ("DEBUG", "weight of " + i + ": " + weight);
 		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
