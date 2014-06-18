@@ -341,17 +341,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Point middle_pupil = new Point();
 		        	
 		        	// match_value is the squared difference normalized across the area
-		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_SQDIFF_NORMED, RETURN_EYE_LEFT); 
-		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_SQDIFF_NORMED, RETURN_EYE_RIGHT); 
-		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_SQDIFF_NORMED, RETURN_MOUTH);
+		        	// use the TM_CCOEFF_NORMED to return high values for better matches
+		        	double match_valuel = match_eye(eyearea_left,templateL, left_pupil, TM_CCOEFF_NORMED, RETURN_EYE_LEFT); 
+		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_CCOEFF_NORMED, RETURN_EYE_RIGHT); 
+		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_CCOEFF_NORMED, RETURN_MOUTH);
 		        
 		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 
 			        double sumweight = 0.0;
 			        // reserve an array with the likelihoods
-			        //float likelihood[] = new float[mResultR.cols() * mResultR.rows()];
 			        Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
-			        Log.i("DEBUG", "mResult width: " + mResultR.width() + " mResult height: " + mResultR.height() + " * " + mResultR.width() * mResultR.height());
 			        Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
 			        Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
 			        // mResultR.get(0, 0, likelihood);
@@ -360,29 +359,24 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        {
 		        	// distance between particle and the eye
 		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
-		        	// TODO determine the likelihood based on the result matrix
-		        	
-		        	// assign likelihood of the particles location from the result matrix
-		        	//int index = ((int)particles[i].getLocation().y * mResultR.width() + (int)particles[i].getLocation().x);
-		        	// relative index for the eye area
-		        	//int index = ((int)(particles[i].getLocation().y - eyearea_right.y) * mResultR.width() + (int)(particles[i].getLocation().x - eyearea_right.x ));
-		        	//int index = particles[i].getLocation().y - eyearea_right.y - 
-		        	
+		        
+		        	// likelihood determinization
 		        	double[] likelihood = new double[1];
 		        	likelihood = mResultR.get((int)(particles[i].getLocation().y - eyearea_right.y), (int)(particles[i].getLocation().x - eyearea_right.x)); 
 		        	
 		        	double weight = 0.0;
-			        //for (int q = 0; q < likelihood.; q++)
 			        if (likelihood != null)
 		        	{
 			        	Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-				        weight = likelihood[0];
-			        }
-			        else
-			        {
-			        	weight = 0.0;
-			        }
-			       	//double weight = (double)likelihood[index]; 
+			        	if (likelihood[0] < 0.0)
+			        	{
+			        		weight = 0.0;
+			        	}
+			        	else 
+			        	{
+			        		weight = likelihood[0];
+			        	}
+		        	}
 		        	
 		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
@@ -407,7 +401,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // average the position of the estimate
 		        estimate.x = estimate.x / weightnorm;
 		        estimate.y = estimate.y / weightnorm;
-		        Core.circle(mRgba, estimate, 5, MOUTH_RECT_COLOR);
+		        Core.circle(mRgba, estimate, 5, MOUTH_RECT_COLOR, 5);
 		        
 		        
 		        /*
