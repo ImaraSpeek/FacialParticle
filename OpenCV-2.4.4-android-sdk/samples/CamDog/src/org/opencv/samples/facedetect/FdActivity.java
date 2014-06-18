@@ -622,13 +622,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // Sort the particles to make an estimation from the top particles' average
 		        Arrays.sort(particlesR);
 		        Arrays.sort(particlesL);
+		        Arrays.sort(particlesM);
 		        //Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
 		        
 		        // Make a proper estimation based on the particles
 		        Point estimateR = new Point();
 		        Point estimateL = new Point();
+		        Point estimateM = new Point();
 		        double weightnormR = 0.0;
 		        double weightnormL = 0.0;
+		        double weightnormM = 0.0;
 		        // set the average for the best 100 particles
 		        for (int i = 0; i < nParticles/10; i ++)
 		        {
@@ -640,6 +643,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	estimateL.x += (particlesL[i].getLocation().x * particlesL[i].getWeight());
 		        	estimateL.y += (particlesL[i].getLocation().y * particlesL[i].getWeight());
 		        	weightnormL += particlesL[i].getWeight();
+		        	// Mouth
+		        	estimateM.x += (particlesM[i].getLocation().x * particlesM[i].getWeight());
+		        	estimateM.y += (particlesM[i].getLocation().y * particlesM[i].getWeight());
+		        	weightnormM += particlesM[i].getWeight();
 		        }
 		        // average the position of the estimate
 		        // Right
@@ -648,8 +655,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // Left
 		        estimateL.x = estimateL.x / weightnormL;
 		        estimateL.y = estimateL.y / weightnormL;
+		        // Mouth
+		        estimateM.x = estimateM.x / weightnormM;
+		        estimateM.y = estimateM.y / weightnormM;
 		        Core.circle(mRgba, estimateR, 5, PUPIL_COLOR, 4);
 		        Core.circle(mRgba, estimateL, 5, PUPIL_COLOR, 4);
+		        Core.circle(mRgba, estimateM, 5, PUPIL_COLOR, 4);
 		        
 		        
 		        
