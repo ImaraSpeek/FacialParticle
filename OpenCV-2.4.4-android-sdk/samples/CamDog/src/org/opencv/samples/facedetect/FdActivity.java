@@ -401,31 +401,39 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	newParticlesL = null;
 	        	
 	        	
+	        	
+	        	
 
 	        	//********************************************************************************************************************************/
 	        	//                                                        MOTION MODEL                                                            /
 	        	//********************************************************************************************************************************/
 	        	
-	        	// Motion model right eye
+	        	// Motion model 
 	        	for (int i = 0; i < nParticles; i++)
 	        	{
-	        		Point transPointR, transPointL;
+	        		Point transPointR, transPointL, transPointM;
 		        	if (prevFace == null)
 		        	{
 		        		// set translated points for right, left and mouth
 		        		transPointR = particlesR[i].getLocation();
 		        		transPointL = particlesL[i].getLocation();
+		        		transPointM = particlesM[i].getLocation();
 		        	}
 		        	else
 		        	{
 		        		transPointR = new Point();
 		        		transPointL = new Point();
+		        		transPointM = new Point();
+		        		
 		        		// Right
 		        		transPointR.x = particlesR[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
 		        		transPointR.y = particlesR[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
 		        		// Left
 		        		transPointL.x = particlesL[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
 		        		transPointL.y = particlesL[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
+		        		// Mouth
+		        		transPointM.x = particlesM[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
+		        		transPointM.y = particlesM[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
 		        	}
 		        	
 		        	double gaussDisp = new Random().nextGaussian()*deviation;
@@ -433,18 +441,24 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	
 		        	Point newPartPointR = new Point();
 		        	Point newPartPointL = new Point();
+		        	Point newPartPointM = new Point();
 		        	// Right
 		        	newPartPointR.x = transPointR.x + Math.sin(angle)*gaussDisp;
 		        	newPartPointR.y = transPointR.y + Math.cos(angle)*gaussDisp;
 		        	// Left
 		        	newPartPointL.x = transPointL.x + Math.sin(angle)*gaussDisp;
 		        	newPartPointL.y = transPointL.y + Math.cos(angle)*gaussDisp;
+		        	// Mouth
+		        	newPartPointM.x = transPointM.x + Math.sin(angle)*gaussDisp;
+		        	newPartPointM.y = transPointM.y + Math.cos(angle)*gaussDisp;
 		        	
 		        	//Core.circle(mRgba, newPartPointR, 2, RIGHT_PIXEL_COLOR);
 		        	//Core.circle(mRgba, newPartPointL, 2, LEFT_PIXEL_COLOR);
+		        	Core.circle(mRgba, newPartPointM, 2, MOUTH_PIXEL_COLOR);
 		        	
 		        	particlesR[i].setLocation(newPartPointR);
 		        	particlesL[i].setLocation(newPartPointL);
+		        	particlesM[i].setLocation(newPartPointM);
 	        	}
 	        	
 	        	
