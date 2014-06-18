@@ -321,6 +321,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              			Core.circle(mRgba, pl, 2, LEFT_PIXEL_COLOR);
              			particlesL[i].setLocation(pl);
              			particlesL[i].setWeight(1.0/particlesL.length);
+             			
+             			// 	MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
+             			particlesM[i] = new Particle();
+             			double mxmin = (double)moutharea.x;
+             			double mxmax = (double)(moutharea.x + moutharea.width);
+             			double mymin = (double)moutharea.y;
+             			double mymax = (double)(moutharea.y + moutharea.height);
+             			//Log.i("WD", xmin + "," + xmax + "," + ymin + "," + ymax);
+             			Point pm = new Point(Particle.randomWithRange(mxmin, mxmax), 
+             								Particle.randomWithRange(mymin, mymax));
+             			Core.circle(mRgba, pm, 2, MOUTH_PIXEL_COLOR);
+             			particlesM[i].setLocation(pm);
+             			particlesM[i].setWeight(1.0/particlesM.length);
 
              		}
              	}
