@@ -60,6 +60,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 255);
     private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 255);
     private static final Scalar    LINE_COLOR    	   = new Scalar(255, 120, 0, 0);
+    private static final Scalar    LEFT_PIXEL_COLOR    = new Scalar(39, 219, 195, 255);
+    private static final Scalar    RIGHT_PIXEL_COLOR   = new Scalar(219, 39, 156, 255);
+    private static final Scalar    MOUTH_PIXEL_COLOR   = new Scalar(219, 90, 39, 255);
+    
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
@@ -123,7 +127,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     // Particle filter variables
     private int nParticles = 1000;
-    private Particle[] particles = new Particle[nParticles];
+    private Particle[] particlesR = new Particle[nParticles];
+    private Particle[] particlesL = new Particle[nParticles];
+    private Particle[] particlesM = new Particle[nParticles];
     
     // variable to save previous face location for motion model
     private Point prevFace = null;
@@ -286,18 +292,33 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              	
              	if(learn_frames == 4) {
              		// Initialize particles for right eye
-             		for (int i = 0; i<particles.length; i++) {
-             			particles[i] = new Particle();
+             		for (int i = 0; i<particlesR.length; i++) {
+             			
+             			// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
+             			particlesR[i] = new Particle();
              			double xmin = (double)eyearea_right.x;
              			double xmax = (double)(eyearea_right.x + eyearea_right.width);
              			double ymin = (double)eyearea_right.y;
              			double ymax = (double)(eyearea_right.y + eyearea_right.height);
              			//Log.i("WD", xmin + "," + xmax + "," + ymin + "," + ymax);
-             			Point p = new Point(Particle.randomWithRange(xmin, xmax), 
+             			Point pr = new Point(Particle.randomWithRange(xmin, xmax), 
              								Particle.randomWithRange(ymin, ymax));
-             			Core.circle(mRgba, p, 2, EYES_RECT_COLOR);
-             			particles[i].setLocation(p);
-             			particles[i].setWeight(1.0/particles.length);
+             			Core.circle(mRgba, pr, 2, RIGHT_PIXEL_COLOR);
+             			particlesR[i].setLocation(pr);
+             			particlesR[i].setWeight(1.0/particlesR.length);
+             			
+             			// LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT
+             			particlesL[i] = new Particle();
+             			double lxmin = (double)eyearea_left.x;
+             			double lxmax = (double)(eyearea_left.x + eyearea_left.width);
+             			double lymin = (double)eyearea_left.y;
+             			double lymax = (double)(eyearea_left.y + eyearea_left.height);
+             			//Log.i("WD", xmin + "," + xmax + "," + ymin + "," + ymax);
+             			Point pl = new Point(Particle.randomWithRange(lxmin, lxmax), 
+             								Particle.randomWithRange(lymin, lymax));
+             			Core.circle(mRgba, pl, 2, LEFT_PIXEL_COLOR);
+             			particlesR[i].setLocation(pl);
+             			particlesR[i].setWeight(1.0/particlesR.length);
 
              		}
              	}
@@ -311,7 +332,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	// Resample the particles according to their assigned weight
 	        	Particle[] newParticles = new Particle[nParticles];
 	        	int iParticle = 0;
-	        	double sumWeights = particles[0].getWeight();
+	        	double sumWeights = particlesR[0].getWeight();
 	        	
 	        	int p = 0;
 	            while (p<nParticles) 
@@ -321,18 +342,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        //if (((1.0*p)/nParticles) <= sumWeights) {
 				        newParticles[p] = new Particle();
 				        newParticles[p].setWeight(1.0/nParticles);
-				        newParticles[p].setLocation(particles[iParticle].getLocation());
+				        newParticles[p].setLocation(particlesR[iParticle].getLocation());
 				        p++;
 				        //Log.i("WD", "Yes");
 				    }
 			        else 
 			        {
 				        iParticle++;
-				        sumWeights += particles[iParticle].getWeight();
+				        sumWeights += particlesR[iParticle].getWeight();
 				        //Log.i("WD", "No");
 			       }
 	            }
-	        	particles = newParticles;
+	            particlesR = newParticles;
 	        	newParticles = null;
 	        	
 	        	
@@ -347,13 +368,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        		Point transPoint;
 		        	if (prevFace == null)
 		        	{
-		        		transPoint = particles[i].getLocation();
+		        		transPoint = particlesR[i].getLocation();
 		        	}
 		        	else
 		        	{
 		        		transPoint = new Point();
-		        		transPoint.x = particles[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
-		        		transPoint.y = particles[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
+		        		transPoint.x = particlesR[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
+		        		transPoint.y = particlesR[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
 		        	}
 		        	
 		        	double gaussDisp = new Random().nextGaussian()*deviation;
@@ -362,8 +383,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Point newPartPoint = new Point();
 		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
 		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
-		        	//Core.circle(mRgba, newPartPoint, 2, EYES_RECT_COLOR);
-		        	particles[i].setLocation(newPartPoint);
+		        	//Core.circle(mRgba, newPartPoint, 2, RIGHT_PIXEL_COLOR);
+		        	particlesR[i].setLocation(newPartPoint);
 	        	}
 	        	
 	        	
@@ -371,7 +392,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          OBSERVATION                                                           /
 	        	//********************************************************************************************************************************/
-	        	
+	        	/*
 	        	// Measure all the features 
 		        	// create points locally to use here
 		        	Point left_pupil = new Point();
@@ -399,18 +420,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	//********************************************************************************************************************************/
 		        	//                                                          ASSIGN WEIGHTS                                                        /
 		        	//********************************************************************************************************************************/    
-			        
+			        /*
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
 		        	// distance between particle and the eye
-		        	double distance = Math.sqrt(Math.pow(particles[i].getLocation().x - right_pupil.x, 2) + Math.pow(particles[i].getLocation().y - right_pupil.y, 2));
+		        	double distance = Math.sqrt(Math.pow(particlesR[i].getLocation().x - right_pupil.x, 2) + Math.pow(particlesR[i].getLocation().y - right_pupil.y, 2));
 		        
 		        	// likelihood determinization
 		        	double[] likelihood = new double[1];
 		        	if (mResultR != null)
 			        {
-			        	likelihood = mResultR.get((int)(particles[i].getLocation().y - eyearea_right.y), (int)(particles[i].getLocation().x - eyearea_right.x)); 
+			        	likelihood = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
 			        }
 		        	double weight = 0.0;
 			        if (likelihood != null)
@@ -429,14 +450,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	weight += Particle.weightGauss(distance) * 200;
 		        	//Log.i ("DEBUG", "weight of " + i + ": " + weight);
 		        	//double weight = Particle.weightGauss(distance);
-		        	particles[i].setWeight(weight);
+		        	particlesR[i].setWeight(weight);
 		        	sumweight += weight;
 		        }
 		        // normalize the weight
 		        for (int i = 0; i< nParticles; i++)
 		        {
-		        	particles[i].setWeight(particles[i].getWeight() / sumweight);
-		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
+		        	particlesR[i].setWeight(particlesR[i].getWeight() / sumweight);
+		        	//Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
 		        
 
@@ -444,10 +465,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          ESTIMATE                                                              /
 	        	//********************************************************************************************************************************/
-		        
+		        /*
 		        // Sort the particles to make an estimation from the top particles' average
-		        Arrays.sort(particles);
-		        Log.i("DEBUG", "particle[0]: " + particles[0].getWeight() + " particle[999]: " + particles[999].getWeight());
+		        Arrays.sort(particlesR);
+		        Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
 		        
 		        // Make a proper estimation based on the particles
 		        Point estimate = new Point();
@@ -455,9 +476,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // set the average for the best 100 particles
 		        for (int i = 0; i < nParticles/10; i ++)
 		        {
-		        	estimate.x += (particles[i].getLocation().x * particles[i].getWeight());
-		        	estimate.y += (particles[i].getLocation().y * particles[i].getWeight());
-		        	weightnorm += particles[i].getWeight();
+		        	estimate.x += (particlesR[i].getLocation().x * particlesR[i].getWeight());
+		        	estimate.y += (particlesR[i].getLocation().y * particlesR[i].getWeight());
+		        	weightnorm += particlesR[i].getWeight();
 		        }
 		        // average the position of the estimate
 		        estimate.x = estimate.x / weightnorm;
@@ -470,8 +491,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          VERIFICATION                                                          /
 	        	//********************************************************************************************************************************/
-		        	
+		        	/*
 	        	// Measure distances and ratios
+		        // TODO set these distances based on the estimate values from particle filter
 	        	
 	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
 	        	
@@ -507,7 +529,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                             TRAIN                                                              /
 	        	//********************************************************************************************************************************/
-		        
+		        /*
 		        // TODO save the values in a database
 		        if (train)
 		        {
@@ -542,6 +564,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        	traincounter++;
 		        	}
 		        }
+		        */
 		        	
 	        	
 	        	
@@ -549,7 +572,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        }
 	        
 	        // save the previous face center point
-	        prevFace = new Point(facesArray[0].x + facesArray[0].width/2, facesArray[0].y + facesArray[0].height/2);       
+	       prevFace = new Point(facesArray[0].x + facesArray[0].width/2, facesArray[0].y + facesArray[0].height/2);       
         }
         
         return mRgba;
