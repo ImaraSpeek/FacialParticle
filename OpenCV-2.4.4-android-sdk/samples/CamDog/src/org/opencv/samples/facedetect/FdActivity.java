@@ -328,7 +328,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          RESAMPLING                                                            /
 	        	//********************************************************************************************************************************/
-	        	/*
+	        	
 	        	// Resample the particles according to their assigned weight
 	        	
 	        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
@@ -520,8 +520,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        {
 			        	particlesR[i].setWeight(particlesR[i].getWeight() / sumweightR);
 			        	particlesL[i].setWeight(particlesL[i].getWeight() / sumweightL);
-			        	//Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), RIGHT_PIXEL_COLOR);
-			        	//Core.circle(mRgba, particlesL[i].getLocation(), (int)(particlesL[i].getWeight()* 1000), LEFT_PIXEL_COLOR);
+			        	Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), RIGHT_PIXEL_COLOR);
+			        	Core.circle(mRgba, particlesL[i].getLocation(), (int)(particlesL[i].getWeight()* 1000), LEFT_PIXEL_COLOR);
 			        }
 		        
 
@@ -529,7 +529,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          ESTIMATE                                                              /
 	        	//********************************************************************************************************************************/
-		        /*
+		        
 		        // Sort the particles to make an estimation from the top particles' average
 		        Arrays.sort(particlesR);
 		        Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
