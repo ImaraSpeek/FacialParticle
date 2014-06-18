@@ -4,6 +4,7 @@ import com.watchdog.pubnub.PubNub;
 import com.watchdog.pubnub.PubNub.PubNubReceiver;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -132,6 +133,7 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 					// Calibration phase ended, set threshold
 					threshold = maxAccValue*calibrationFactor;
 					Log.i(TAG, "Going into LOCKED state with threshold " + threshold + " from maxAccValue " + maxAccValue);
+					beginLocked();
 					appState.setState(ApplicationState.LOCK_STATE_LOCKED);
 				}
 			}
@@ -162,6 +164,11 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 			}
 		}
 	}
+	
+	public void beginLocked() {
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		pubnub.sendMessage("LOCKED!@" + adapter.getAddress() + "@" + adapter.getName());
+	}
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) { }
@@ -190,5 +197,6 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 	public void onReceiveMessage(String message) {
 		
 	}
+
 
 }
