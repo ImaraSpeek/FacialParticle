@@ -349,12 +349,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
 			        double sumweight = 0.0;
 			        // reserve an array with the likelihoods
-			        float likelihood[] = new float[mResultR.cols() * mResultR.rows()];
+			        //float likelihood[] = new float[mResultR.cols() * mResultR.rows()];
 			        Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
 			        Log.i("DEBUG", "mResult width: " + mResultR.width() + " mResult height: " + mResultR.height() + " * " + mResultR.width() * mResultR.height());
 			        Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
 			        Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
-			        mResultR.get(0, 0, likelihood);
+			        // mResultR.get(0, 0, likelihood);
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
 		        {
@@ -368,8 +368,23 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	//int index = ((int)(particles[i].getLocation().y - eyearea_right.y) * mResultR.width() + (int)(particles[i].getLocation().x - eyearea_right.x ));
 		        	//int index = particles[i].getLocation().y - eyearea_right.y - 
 		        	
-		        	//double weight = (double)likelihood[index]; 
-		        	double weight = Particle.weightGauss(distance);
+		        	double[] likelihood = new double[1];
+		        	likelihood = mResultR.get((int)(particles[i].getLocation().y - eyearea_right.y), (int)(particles[i].getLocation().x - eyearea_right.x)); 
+		        	
+		        	double weight = 0.0;
+			        //for (int q = 0; q < likelihood.; q++)
+			        if (likelihood != null)
+		        	{
+			        	Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
+				        weight = likelihood[0];
+			        }
+			        else
+			        {
+			        	weight = 0.0;
+			        }
+			       	//double weight = (double)likelihood[index]; 
+		        	
+		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
 		        }
