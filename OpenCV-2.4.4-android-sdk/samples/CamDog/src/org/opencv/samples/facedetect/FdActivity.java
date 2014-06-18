@@ -570,7 +570,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          VERIFICATION                                                          /
 	        	//********************************************************************************************************************************/
-		        	/*
+		        
 	        	// Measure distances and ratios
 		        // TODO set these distances based on the estimate values from particle filter
 	        	
@@ -581,13 +581,13 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
 		        
 		        // determine horizontal and vertical distances
-		        double eyex = Math.abs(left_pupil.x - right_pupil.x);
-		        double eyey = Math.abs(left_pupil.y - right_pupil.y);
+		        double eyex = Math.abs(estimateL.x - estimateR.x);
+		        double eyey = Math.abs(estimateL.y - estimateR.y);
 		        // determine the x by subtracting half of the width from the farthest x coordinate
-		        middle_pupil.x = left_pupil.x - (eyex / 2);
-		        middle_pupil.y = left_pupil.y - (eyey / 2);
+		        middle_pupil.x = estimateL.x - (eyex / 2);
+		        middle_pupil.y = estimateL.y - (eyey / 2);
 		        
-		        Core.line(mRgba, left_pupil, right_pupil, LINE_COLOR, 2);
+		        Core.line(mRgba, estimateL, estimateR, LINE_COLOR, 2);
 		        
 		        // determine the horizontal and vertical distances from middle of the eyes to the mouth
 		        double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
