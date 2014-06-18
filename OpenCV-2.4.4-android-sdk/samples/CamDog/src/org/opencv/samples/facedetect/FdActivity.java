@@ -43,6 +43,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
 
+import java.sql.Array;
 import java.util.*;
 
 
@@ -388,7 +389,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	double weight = 0.0;
 			        if (likelihood != null)
 		        	{
-			        	Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
+			        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
 			        	if (likelihood[0] <= 0.0)
 			        	{
 			        		weight = 0.0;
@@ -400,7 +401,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	}
 			        // add the Gaussian distrubutian of the most likely pupil
 		        	weight += Particle.weightGauss(distance) * 100;
-		        	Log.i ("DEBUG", "weight of " + i + ": " + weight);
+		        	//Log.i ("DEBUG", "weight of " + i + ": " + weight);
 		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
 		        	sumweight += weight;
@@ -412,10 +413,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	Core.circle(mRgba, particles[i].getLocation(), (int)(particles[i].getWeight()* 1000), EYES_RECT_COLOR);
 		        }
 		        
+		        // Sort the particles to make an estimation from the top particles' average
+		        Arrays.sort(particles);
+		        Log.i("DEBUG", "particle[0]: " + particles[0].getWeight() + " particle[999]: " + particles[999].getWeight());
+		        
 		        // Make a proper estimation based on the particles
 		        Point estimate = new Point();
 		        double weightnorm = 0.0;
-		        for (int i = 0; i < nParticles; i ++)
+		        // set the average for the best 100 particles
+		        for (int i = 0; i < nParticles/10; i ++)
 		        {
 		        	estimate.x += (particles[i].getLocation().x * particles[i].getWeight());
 		        	estimate.y += (particles[i].getLocation().y * particles[i].getWeight());
