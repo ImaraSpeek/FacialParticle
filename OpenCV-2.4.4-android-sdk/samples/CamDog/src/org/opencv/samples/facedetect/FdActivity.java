@@ -317,8 +317,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              			Point pl = new Point(Particle.randomWithRange(lxmin, lxmax), 
              								Particle.randomWithRange(lymin, lymax));
              			Core.circle(mRgba, pl, 2, LEFT_PIXEL_COLOR);
-             			particlesR[i].setLocation(pl);
-             			particlesR[i].setWeight(1.0/particlesR.length);
+             			particlesL[i].setLocation(pl);
+             			particlesL[i].setWeight(1.0/particlesL.length);
 
              		}
              	}
@@ -330,31 +330,60 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	
 	        	// Resample the particles according to their assigned weight
-	        	Particle[] newParticles = new Particle[nParticles];
-	        	int iParticle = 0;
-	        	double sumWeights = particlesR[0].getWeight();
 	        	
-	        	int p = 0;
-	            while (p<nParticles) 
+	        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
+	        	Particle[] newParticlesR = new Particle[nParticles];
+	        	int iParticleR = 0;
+	        	double sumWeightsR = particlesR[0].getWeight();
+	        	
+	        	int pr = 0;
+	            while (pr<nParticles) 
 	            {
 			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
-	            	if (((1.0*p)/nParticles) <= sumWeights || (iParticle+1) == nParticles) {
+	            	if (((1.0*pr)/nParticles) <= sumWeightsR || (iParticleR+1) == nParticles) {
 			        //if (((1.0*p)/nParticles) <= sumWeights) {
-				        newParticles[p] = new Particle();
-				        newParticles[p].setWeight(1.0/nParticles);
-				        newParticles[p].setLocation(particlesR[iParticle].getLocation());
-				        p++;
+				        newParticlesR[pr] = new Particle();
+				        newParticlesR[pr].setWeight(1.0/nParticles);
+				        newParticlesR[pr].setLocation(particlesR[iParticleR].getLocation());
+				        pr++;
 				        //Log.i("WD", "Yes");
 				    }
 			        else 
 			        {
-				        iParticle++;
-				        sumWeights += particlesR[iParticle].getWeight();
+				        iParticleR++;
+				        sumWeightsR += particlesR[iParticleR].getWeight();
 				        //Log.i("WD", "No");
 			       }
 	            }
-	            particlesR = newParticles;
-	        	newParticles = null;
+	            particlesR = newParticlesR;
+	        	newParticlesR = null;
+	        	
+	        	// LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT
+	        	Particle[] newParticlesL = new Particle[nParticles];
+	        	int iParticleL = 0;
+	        	double sumWeightsL = particlesL[0].getWeight();
+	        	
+	        	int pl = 0;
+	            while (pl<nParticles) 
+	            {
+			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	            	if (((1.0*pl)/nParticles) <= sumWeightsL || (iParticleL+1) == nParticles) {
+			        //if (((1.0*p)/nParticles) <= sumWeights) {
+				        newParticlesL[pl] = new Particle();
+				        newParticlesL[pl].setWeight(1.0/nParticles);
+				        newParticlesL[pl].setLocation(particlesL[iParticleL].getLocation());
+				        pl++;
+				        //Log.i("WD", "Yes");
+				    }
+			        else 
+			        {
+				        iParticleL++;
+				        sumWeightsL += particlesL[iParticleL].getWeight();
+				        //Log.i("WD", "No");
+			       }
+	            }
+	            particlesL = newParticlesL;
+	        	newParticlesL = null;
 	        	
 	        	
 
@@ -365,26 +394,42 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	// Motion model right eye
 	        	for (int i = 0; i < nParticles; i++)
 	        	{
-	        		Point transPoint;
+	        		Point transPointR, transPointL;
 		        	if (prevFace == null)
 		        	{
-		        		transPoint = particlesR[i].getLocation();
+		        		// set translated points for right, left and mouth
+		        		transPointR = particlesR[i].getLocation();
+		        		transPointL = particlesL[i].getLocation();
 		        	}
 		        	else
 		        	{
-		        		transPoint = new Point();
-		        		transPoint.x = particlesR[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
-		        		transPoint.y = particlesR[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
+		        		transPointR = new Point();
+		        		transPointL = new Point();
+		        		// Right
+		        		transPointR.x = particlesR[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
+		        		transPointR.y = particlesR[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
+		        		// Left
+		        		transPointL.x = particlesL[i].getLocation().x + (facesArray[0].x + facesArray[0].width/2 - prevFace.x);
+		        		transPointL.y = particlesL[i].getLocation().y + (facesArray[0].y + facesArray[0].height/2 - prevFace.y);
 		        	}
 		        	
 		        	double gaussDisp = new Random().nextGaussian()*deviation;
 		        	double angle = Math.random()*2*Math.PI;
 		        	
-		        	Point newPartPoint = new Point();
-		        	newPartPoint.x = transPoint.x + Math.sin(angle)*gaussDisp;
-		        	newPartPoint.y = transPoint.y + Math.cos(angle)*gaussDisp;
-		        	//Core.circle(mRgba, newPartPoint, 2, RIGHT_PIXEL_COLOR);
-		        	particlesR[i].setLocation(newPartPoint);
+		        	Point newPartPointR = new Point();
+		        	Point newPartPointL = new Point();
+		        	// Right
+		        	newPartPointR.x = transPointR.x + Math.sin(angle)*gaussDisp;
+		        	newPartPointR.y = transPointR.y + Math.cos(angle)*gaussDisp;
+		        	// Left
+		        	newPartPointL.x = transPointL.x + Math.sin(angle)*gaussDisp;
+		        	newPartPointL.y = transPointL.y + Math.cos(angle)*gaussDisp;
+		        	
+		        	Core.circle(mRgba, newPartPointR, 2, RIGHT_PIXEL_COLOR);
+		        	Core.circle(mRgba, newPartPointL, 2, LEFT_PIXEL_COLOR);
+		        	
+		        	particlesR[i].setLocation(newPartPointR);
+		        	particlesL[i].setLocation(newPartPointL);
 	        	}
 	        	
 	        	
