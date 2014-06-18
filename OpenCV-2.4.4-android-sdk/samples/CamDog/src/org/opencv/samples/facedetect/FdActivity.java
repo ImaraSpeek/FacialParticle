@@ -401,6 +401,33 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	newParticlesL = null;
 	        	
 	        	
+	        	// MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
+	        	Particle[] newParticlesM = new Particle[nParticles];
+	        	int iParticleM = 0;
+	        	double sumWeightsM = particlesM[0].getWeight();
+	        	
+	        	int pm = 0;
+	            while (pm<nParticles) 
+	            {
+			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	            	if (((1.0*pm)/nParticles) <= sumWeightsM || (iParticleM+1) == nParticles) {
+			        //if (((1.0*p)/nParticles) <= sumWeights) {
+				        newParticlesM[pm] = new Particle();
+				        newParticlesM[pm].setWeight(1.0/nParticles);
+				        newParticlesM[pm].setLocation(particlesM[iParticleM].getLocation());
+				        pm++;
+				        //Log.i("WD", "Yes");
+				    }
+			        else 
+			        {
+				        iParticleM++;
+				        sumWeightsM += particlesM[iParticleM].getWeight();
+				        //Log.i("WD", "No");
+			       }
+	            }
+	            particlesM = newParticlesM;
+	        	newParticlesM = null;
+	        	
 	        	
 	        	
 
