@@ -43,6 +43,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.BounceInterpolator;
+import android.widget.Toast;
 
 import java.sql.Array;
 import java.util.*;
@@ -666,7 +667,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        
 
 	        	//********************************************************************************************************************************/
-	        	//                                                          VERIFICATION                                                          /
+	        	//                                                          MEASUREMENTS                                                          /
 	        	//********************************************************************************************************************************/
 		        
 	        	// Measure distances and ratios
@@ -688,10 +689,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        Core.line(mRgba, estimateL, estimateR, LINE_COLOR, 2);
 		        
 		        // determine the horizontal and vertical distances from middle of the eyes to the mouth
-		        double mouthx = Math.abs(Math.max(middle_pupil.x, lips.x) - Math.min(middle_pupil.x, lips.x));
-		        double mouthy = Math.abs(Math.max(middle_pupil.y, lips.y) - Math.min(middle_pupil.y, lips.y));
+		        double mouthx = Math.abs(Math.max(middle_pupil.x, estimateM.x) - Math.min(middle_pupil.x, estimateM.x));
+		        double mouthy = Math.abs(Math.max(middle_pupil.y, estimateM.y) - Math.min(middle_pupil.y, estimateM.y));
 	
-		        Core.line(mRgba, middle_pupil, lips, LINE_COLOR, 2);
+		        Core.line(mRgba, middle_pupil, estimateM, LINE_COLOR, 2);
 		        	
 		        // pythagoras
 		        double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
@@ -702,11 +703,45 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	
 		        Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
 		        
+
+	        	//********************************************************************************************************************************/
+	        	//                                                             VERIFICATION                                                       /
+	        	//********************************************************************************************************************************/
+		        
+		        // TODO compare the training dataset with the current observations if there is a dataset available
+		        if (traindata[nSamples - 1] != 0.0)
+		        {
+		        	
+		        }
+		        else 
+		        {
+		        	// I dont think toast works in oncamera frame
+		        	/*
+            		Context context = getApplicationContext();
+            		CharSequence text = "first train!";
+            		int duration = Toast.LENGTH_LONG;
+
+            		Toast toast = Toast.makeText(context, text, duration);
+            		toast.show();
+		        	train = true;
+		        	*/
+		        }
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+		        
 		        
 	        	//********************************************************************************************************************************/
 	        	//                                                             TRAIN                                                              /
 	        	//********************************************************************************************************************************/
-		        /*
+		        
 		        // TODO save the values in a database
 		        if (train)
 		        {
@@ -741,11 +776,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        	traincounter++;
 		        	}
 		        }
-		        */
-		        	
-	        	
-	        	
-	        	
 	        }
 	        
 	        // save the previous face center point
