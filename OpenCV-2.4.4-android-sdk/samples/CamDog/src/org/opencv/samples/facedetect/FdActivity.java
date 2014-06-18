@@ -63,6 +63,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
+    private MenuItem			   mItemTrain;
 
     private Mat                    mRgba;
     private Mat                    mGray;
@@ -354,9 +355,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
 			        double sumweight = 0.0;
 			        // reserve an array with the likelihoods
-			        Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
-			        Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
-			        Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
+			        //Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
+			        //Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
+			        //Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
 			        // mResultR.get(0, 0, likelihood);
 	        	// assign weights according to observation for right eye
 		        for (int i = 0; i< nParticles; i++)
@@ -382,7 +383,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        	}
 		        	}
 			        // add the Gaussian distrubutian of the most likely pupil
-		        	weight += Particle.weightGauss(distance) * 100;
+		        	weight += Particle.weightGauss(distance) * 200;
 		        	//Log.i ("DEBUG", "weight of " + i + ": " + weight);
 		        	//double weight = Particle.weightGauss(distance);
 		        	particles[i].setWeight(weight);
@@ -606,6 +607,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
+        mItemTrain = menu.add("Train");
         return true;
     }
 
@@ -620,6 +622,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             setMinFaceSize(0.3f);
         else if (item == mItemFace20)
             setMinFaceSize(0.2f);
+        else if (item == mItemTrain)
+        {
+        	// TODO train
+        }
         return true;
     }
 
