@@ -328,7 +328,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          RESAMPLING                                                            /
 	        	//********************************************************************************************************************************/
-	        	
+	        	/*
 	        	// Resample the particles according to their assigned weight
 	        	
 	        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
@@ -425,8 +425,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	newPartPointL.x = transPointL.x + Math.sin(angle)*gaussDisp;
 		        	newPartPointL.y = transPointL.y + Math.cos(angle)*gaussDisp;
 		        	
-		        	Core.circle(mRgba, newPartPointR, 2, RIGHT_PIXEL_COLOR);
-		        	Core.circle(mRgba, newPartPointL, 2, LEFT_PIXEL_COLOR);
+		        	//Core.circle(mRgba, newPartPointR, 2, RIGHT_PIXEL_COLOR);
+		        	//Core.circle(mRgba, newPartPointL, 2, LEFT_PIXEL_COLOR);
 		        	
 		        	particlesR[i].setLocation(newPartPointR);
 		        	particlesL[i].setLocation(newPartPointL);
@@ -437,8 +437,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 	        	//                                                          OBSERVATION                                                           /
 	        	//********************************************************************************************************************************/
-	        	/*
-	        	// Measure all the features 
+	        	
+	        		// Measure all the features 
 		        	// create points locally to use here
 		        	Point left_pupil = new Point();
 		        	Point right_pupil = new Point();
@@ -453,57 +453,76 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_CCOEFF_NORMED, RETURN_MOUTH);
 		        
 		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
-
-			        double sumweight = 0.0;
-			        // reserve an array with the likelihoods
-			        //Log.i("DEBUG", "mResult cols: " + mResultR.cols() + " mResult rows: " + mResultR.rows() + " * " + mResultR.cols() * mResultR.rows());
-			        //Log.i("DEBUG", "size of area: " + eyearea_right.width + " x " + eyearea_right.height);
-			        //Log.i("DEBUG", "eye right y : " + eyearea_right.y + "mResult y " );
-			        // mResultR.get(0, 0, likelihood);
 			        
 
-		        	//********************************************************************************************************************************/
-		        	//                                                          ASSIGN WEIGHTS                                                        /
-		        	//********************************************************************************************************************************/    
-			        /*
-	        	// assign weights according to observation for right eye
-		        for (int i = 0; i< nParticles; i++)
-		        {
-		        	// distance between particle and the eye
-		        	double distance = Math.sqrt(Math.pow(particlesR[i].getLocation().x - right_pupil.x, 2) + Math.pow(particlesR[i].getLocation().y - right_pupil.y, 2));
-		        
-		        	// likelihood determinization
-		        	double[] likelihood = new double[1];
-		        	if (mResultR != null)
+		        //********************************************************************************************************************************/
+		        //                                                          ASSIGN WEIGHTS                                                        /
+		        //********************************************************************************************************************************/    
+			       
+		        	double sumweightR = 0.0;   
+		        	double sumweightL = 0.0;   
+		        	// assign weights according to observation for right eye
+			        for (int i = 0; i< nParticles; i++)
 			        {
-			        	likelihood = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
+			        	// distance between particle and the eye
+			        	double distanceR = Math.sqrt(Math.pow(particlesR[i].getLocation().x - right_pupil.x, 2) + Math.pow(particlesR[i].getLocation().y - right_pupil.y, 2));
+			        	double distanceL = Math.sqrt(Math.pow(particlesL[i].getLocation().x - left_pupil.x, 2) + Math.pow(particlesL[i].getLocation().y - left_pupil.y, 2));
+				        
+			        	// likelihood determinization
+			        	double[] likelihoodR = new double[1];
+			        	double[] likelihoodL = new double[1];
+			        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
+			        	if (mResultR != null)
+				        {
+				        	likelihoodR = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
+				        }
+			        	double weightR = 0.0;
+				        if (likelihoodR != null)
+			        	{
+				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
+				        	if (likelihoodR[0] <= 0.0)
+				        	{
+				        		weightR = 0.0;
+				        	}
+				        	else 
+				        	{
+				        		weightR = likelihoodR[0];
+				        	}
+			        	}
+				        // LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT 
+			        	if (mResultL != null)
+				        {
+				        	likelihoodL = mResultL.get((int)(particlesL[i].getLocation().y - eyearea_left.y), (int)(particlesL[i].getLocation().x - eyearea_left.x)); 
+				        }
+			        	double weightL = 0.0;
+				        if (likelihoodL != null)
+			        	{
+				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
+				        	if (likelihoodL[0] <= 0.0)
+				        	{
+				        		weightL = 0.0;
+				        	}
+				        	else 
+				        	{
+				        		weightL = likelihoodL[0];
+				        	}
+			        	}
+				        // add the Gaussian distrubutian of the most likely pupil
+			        	weightR += Particle.weightGauss(distanceR) * 200;
+			        	weightL += Particle.weightGauss(distanceL) * 200;
+			        	particlesR[i].setWeight(weightR);
+			        	particlesL[i].setWeight(weightL);
+			        	sumweightR += weightR;
+			        	sumweightL += weightL;
 			        }
-		        	double weight = 0.0;
-			        if (likelihood != null)
-		        	{
-			        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-			        	if (likelihood[0] <= 0.0)
-			        	{
-			        		weight = 0.0;
-			        	}
-			        	else 
-			        	{
-			        		weight = likelihood[0];
-			        	}
-		        	}
-			        // add the Gaussian distrubutian of the most likely pupil
-		        	weight += Particle.weightGauss(distance) * 200;
-		        	//Log.i ("DEBUG", "weight of " + i + ": " + weight);
-		        	//double weight = Particle.weightGauss(distance);
-		        	particlesR[i].setWeight(weight);
-		        	sumweight += weight;
-		        }
-		        // normalize the weight
-		        for (int i = 0; i< nParticles; i++)
-		        {
-		        	particlesR[i].setWeight(particlesR[i].getWeight() / sumweight);
-		        	//Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), EYES_RECT_COLOR);
-		        }
+			        // normalize the weight
+			        for (int i = 0; i< nParticles; i++)
+			        {
+			        	particlesR[i].setWeight(particlesR[i].getWeight() / sumweightR);
+			        	particlesL[i].setWeight(particlesL[i].getWeight() / sumweightL);
+			        	//Core.circle(mRgba, particlesR[i].getLocation(), (int)(particlesR[i].getWeight()* 1000), RIGHT_PIXEL_COLOR);
+			        	//Core.circle(mRgba, particlesL[i].getLocation(), (int)(particlesL[i].getWeight()* 1000), LEFT_PIXEL_COLOR);
+			        }
 		        
 
 		        
