@@ -238,7 +238,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         
-        Log.i("LOG", "size of frame is: " + mRgba.cols() + " x " + mRgba.rows());
+        //Log.i("LOG", "size of frame is: " + mRgba.cols() + " x " + mRgba.rows());
         
         MatOfRect 	faces = new MatOfRect();
         Rect[] 		facesArray = null;
@@ -261,6 +261,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // TODO sense if more than 1 face and give an error
         if (facesArray.length > 0)
         {
+        	//********************************************************************************************************************************/
+        	//                                                         SETTING ROIs                                                           /
+        	//********************************************************************************************************************************/
+        	
         	// color the faces
         	Core.rectangle(mRgba, facesArray[0].tl(), facesArray[0].br(), FACE_RECT_COLOR, 3);
         	
@@ -273,7 +277,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             Core.rectangle(mRgba, eyearea_right.tl(),eyearea_right.br(), EYES_RECT_COLOR, 2);
             
             // compute the mouth area
-	        Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
+	        //Rect moutharea = new Rect((facesArray[0].x + (facesArray[0].width/4)), (int)(facesArray[0].y + facesArray[0].height/1.5), (facesArray[0].width - facesArray[0].width/2),(int)(facesArray[0].height/3.0));
+	        Rect moutharea = new Rect(eyearea_right.x + (2 * eyearea_right.width / 3), (int)(facesArray[0].y + facesArray[0].height/1.35), 2 * eyearea_right.width / 3,  (int)(facesArray[0].height/4.5));
 	        Core.rectangle(mRgba, moutharea.tl(), moutharea.br(), MOUTH_RECT_COLOR, 2);
             
 	        
@@ -350,25 +355,25 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
 	        	Particle[] newParticlesR = new Particle[nParticles];
 	        	int iParticleR = 0;
+	        	// get the weight of the first particle to determine the amount of normalized particles to resample with this location
 	        	double sumWeightsR = particlesR[0].getWeight();
 	        	
 	        	int pr = 0;
+	        	// loop through the amount of particles that have to be created
 	            while (pr<nParticles) 
 	            {
-			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	            	// if the weight of the particle is high enough, resample a particle from the current particle
 	            	if (((1.0*pr)/nParticles) <= sumWeightsR || (iParticleR+1) == nParticles) {
-			        //if (((1.0*p)/nParticles) <= sumWeights) {
 				        newParticlesR[pr] = new Particle();
 				        newParticlesR[pr].setWeight(1.0/nParticles);
 				        newParticlesR[pr].setLocation(particlesR[iParticleR].getLocation());
 				        pr++;
-				        //Log.i("WD", "Yes");
 				    }
+	            	// if not, continute on in the loop of current particles
 			        else 
 			        {
 				        iParticleR++;
 				        sumWeightsR += particlesR[iParticleR].getWeight();
-				        //Log.i("WD", "No");
 			       }
 	            }
 	            particlesR = newParticlesR;
@@ -377,25 +382,25 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	// LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT
 	        	Particle[] newParticlesL = new Particle[nParticles];
 	        	int iParticleL = 0;
+	        	// get the weight of the first particle to determine the amount of normalized particles to resample with this location
 	        	double sumWeightsL = particlesL[0].getWeight();
 	        	
 	        	int pl = 0;
+	        	// loop through the amount of particles that have to be created
 	            while (pl<nParticles) 
 	            {
-			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	            	// if the weight of the particle is high enough, resample a particle from the current particle
 	            	if (((1.0*pl)/nParticles) <= sumWeightsL || (iParticleL+1) == nParticles) {
-			        //if (((1.0*p)/nParticles) <= sumWeights) {
 				        newParticlesL[pl] = new Particle();
 				        newParticlesL[pl].setWeight(1.0/nParticles);
 				        newParticlesL[pl].setLocation(particlesL[iParticleL].getLocation());
 				        pl++;
-				        //Log.i("WD", "Yes");
 				    }
+	            	// if not, continute on in the loop of current particles
 			        else 
 			        {
 				        iParticleL++;
 				        sumWeightsL += particlesL[iParticleL].getWeight();
-				        //Log.i("WD", "No");
 			       }
 	            }
 	            particlesL = newParticlesL;
@@ -405,25 +410,25 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	// MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
 	        	Particle[] newParticlesM = new Particle[nParticles];
 	        	int iParticleM = 0;
+	        	// get the weight of the first particle to determine the amount of normalized particles to resample with this location
 	        	double sumWeightsM = particlesM[0].getWeight();
 	        	
 	        	int pm = 0;
+	        	// loop through the amount of particles that have to be created
 	            while (pm<nParticles) 
 	            {
-			        //Log.i("WD", ((1.0*i)/nParticles) + " " + sumWeights + " " + particles[iParticle].getWeight());
+	            	// if the weight of the particle is high enough, resample a particle from the current particle
 	            	if (((1.0*pm)/nParticles) <= sumWeightsM || (iParticleM+1) == nParticles) {
-			        //if (((1.0*p)/nParticles) <= sumWeights) {
 				        newParticlesM[pm] = new Particle();
 				        newParticlesM[pm].setWeight(1.0/nParticles);
 				        newParticlesM[pm].setLocation(particlesM[iParticleM].getLocation());
 				        pm++;
-				        //Log.i("WD", "Yes");
 				    }
 			        else 
 			        {
+			        	// if not, continute on in the loop of current particles
 				        iParticleM++;
 				        sumWeightsM += particlesM[iParticleM].getWeight();
-				        //Log.i("WD", "No");
 			       }
 	            }
 	            particlesM = newParticlesM;
@@ -548,8 +553,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        		}
 			        		else 
 			        		{
-					        	//double[] test = mResultR.get(eyearea_right.y/2, eyearea_right.x/2);
-					        	//Log.i("DEBUG", "test double for value outside result: " + test[0] );
 					        	likelihoodR = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
 					        	if (likelihoodR != null && likelihoodR[0] > 0.0)
 					        	{
@@ -557,44 +560,48 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 					        	}
 			        		}
 				        }
-				        
-				        // LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT 
+			        	
+			        	// LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT
+			        	double weightL = 0.0;
 			        	if (mResultL != null)
 				        {
-				        	likelihoodL = mResultL.get((int)(particlesL[i].getLocation().y - eyearea_left.y), (int)(particlesL[i].getLocation().x - eyearea_left.x)); 
+			        		// check if the particle is within the region, if not set weight to zero
+			        		if (particlesL[i].getLocation().x < eyearea_left.x || particlesL[i].getLocation().x > eyearea_left.x + eyearea_left.width || 
+			        				particlesL[i].getLocation().y < eyearea_left.y || particlesL[i].getLocation().y > eyearea_left.y + eyearea_left.height)
+			        		{
+			        			// leave weight at 0.0;
+			        		}
+			        		else 
+			        		{
+					        	likelihoodL = mResultL.get((int)(particlesL[i].getLocation().y - eyearea_left.y), (int)(particlesL[i].getLocation().x - eyearea_left.x)); 
+					        	if (likelihoodL != null && likelihoodL[0] > 0.0)
+					        	{
+					        		weightL = likelihoodL[0];
+					        	}
+			        		}
 				        }
-			        	double weightL = 0.0;
-				        if (likelihoodL != null)
-			        	{
-				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-				        	if (likelihoodL[0] <= 0.0)
-				        	{
-				        		weightL = 0.0;
-				        	}
-				        	else 
-				        	{
-				        		weightL = likelihoodL[0];
-				        	}
-			        	}
-				        
-				        // MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
+			        	
+			        	// MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH MOUTH
+			        	double weightM = 0.0;
 			        	if (mResultM != null)
 				        {
-				        	likelihoodM = mResultM.get((int)(particlesM[i].getLocation().y - moutharea.y), (int)(particlesM[i].getLocation().x - moutharea.x)); 
+			        		// check if the particle is within the region, if not set weight to zero
+			        		if (particlesM[i].getLocation().x < moutharea.x || particlesM[i].getLocation().x > moutharea.x + moutharea.width || 
+			        				particlesM[i].getLocation().y < moutharea.y || particlesM[i].getLocation().y > moutharea.y + moutharea.height)
+			        		{
+			        			// leave weight at 0.0;
+			        		}
+			        		else 
+			        		{
+					        	likelihoodM = mResultM.get((int)(particlesM[i].getLocation().y - moutharea.y), (int)(particlesM[i].getLocation().x - moutharea.x)); 
+					        	if (likelihoodM != null && likelihoodM[0] > 0.0)
+					        	{
+					        		weightM = likelihoodM[0];
+					        	}
+			        		}
 				        }
-			        	double weightM = 0.0;
-				        if (likelihoodM != null)
-			        	{
-				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-				        	if (likelihoodM[0] <= 0.0)
-				        	{
-				        		weightM = 0.0;
-				        	}
-				        	else 
-				        	{
-				        		weightM = likelihoodM[0];
-				        	}
-			        	}
+				        
+
 				        
 				        // add the Gaussian distrubutian of the most likely pupil
 			        	weightR += Particle.weightGauss(distanceR) * 200;
@@ -681,7 +688,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	
 		        //Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
 		        //Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
-		        Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
+		        //Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
 		        
 		        // determine horizontal and vertical distances
 		        double eyex = Math.abs(estimateL.x - estimateR.x);
@@ -705,7 +712,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // actual ratio
 		        double ratio = interoccular / moutheyes;
 		        	
-		        Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
+		        //Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
 		        
 
 	        	//********************************************************************************************************************************/
@@ -749,7 +756,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // TODO save the values in a database
 		        if (train)
 		        {
-		        	Log.i("DEBUG", "im in the train loop");
+		        	//Log.i("DEBUG", "im in the train loop");
 		        	if (traincounter >= nSamples)
 		        	{
 		        		double average = 0.0;
@@ -768,7 +775,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		                }
 		                double variance = temp / (nSamples - 1);
 		        		
-		                Log.i("ratio", "mean: " + average + "variance: " + variance);
+		                //Log.i("ratio", "mean: " + average + "variance: " + variance);
 		                // set training variables back to 0
 		        		traincounter = 0;
 		        		train = false;
@@ -776,7 +783,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	else
 		        	{
 			        	traindata[traincounter] = ratio;
-			        	Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
+			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
 			        	traincounter++;
 		        	}
 		        }
@@ -931,7 +938,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.i(TAG, "called onCreateOptionsMenu");
+        //Log.i(TAG, "called onCreateOptionsMenu");
         mItemFace50 = menu.add("Face size 50%");
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
@@ -942,7 +949,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
+        //Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
         if (item == mItemFace50)
             setMinFaceSize(0.5f);
         else if (item == mItemFace40)
@@ -971,9 +978,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     {
 
         try {
-        	// initialize new camshift
-        	//cs = new CamShifting();                    	
-        	
             // load cascade file from application resources - lpbcascade is faster than haarcascade but not as robust
             InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
@@ -1096,7 +1100,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             e.printStackTrace();
             Log.e(TAG, "Failed to load cascade. Exception thrown: " + e);
         }
-
-    	
+            	
     }
 }
