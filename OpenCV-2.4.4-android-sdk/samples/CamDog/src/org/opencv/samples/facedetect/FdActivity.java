@@ -267,6 +267,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         // only perform functionality when a face is detected
         if (facesArray.length > 0)
         {
+        	// TODO give an error when there are 2 people
         	//********************************************************************************************************************************/
         	//                                                         SETTING ROIs                                                           /
         	//********************************************************************************************************************************/
@@ -296,6 +297,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        // learn the template for the features
 	        if(learn_frames < templateSamples)
 	        {
+	        	// TODO test to increase the size
 	        	templateL = get_template(mCascadeEL,eyearea_left,24);
              	templateR = get_template(mCascadeER,eyearea_right,24);
              	// have to open mouth slightly for it to calibrate
