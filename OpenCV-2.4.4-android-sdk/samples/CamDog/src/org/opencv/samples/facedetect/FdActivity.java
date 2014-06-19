@@ -143,7 +143,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // a array of size 2 to save the mean and the sigma of the ratios for training
     private double[] ratios = new double[2];
     private int traincounter = 0;
-    private int nSamples = 20;
+    private int nSamples = 5;
     private double[] traindata = new double[nSamples];
     private double meanPersonal = 0.0;
     private double deviationPersonal = 0.0;
@@ -791,6 +791,24 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
 		                // Commit the edits!
 		                editor.commit();
+		                
+		                // Notify user the training is done
+		                FdActivity.this.runOnUiThread(new Runnable() {
+
+							@Override
+							public void run() {
+								// TODO Auto-generated method stub
+								Context context = getApplicationContext();
+			            		CharSequence text = "Training is complete!";
+			            		int duration = Toast.LENGTH_LONG;
+			            		Toast toast = Toast.makeText(context, text, duration);
+			            		toast.show();
+							}
+		                	
+		                });
+	            		
+
+	            		
 		               
 		                // set training variables back to 0
 		        		traincounter = 0;
