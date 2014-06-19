@@ -143,8 +143,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // a array of size 2 to save the mean and the sigma of the ratios for training
     private double[] ratios = new double[2];
     private int traincounter = 0;
-    private int nSamples = 100;
+    private int nSamples = 20;
     private double[] traindata = new double[nSamples];
+    private double meanPersonal = 0.0;
+    private double deviationPersonal = 0.0;
 
     
     
@@ -196,8 +198,18 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.face_detect_surface_view);
-      
+        
+        // Restore the training data stored for the current users' face ratios
+        // The mean and deviation are stored in a stringg
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        String personalData = settings.getString("PersonalData", "");
+        if (personalData != "")
+        {
+        	meanPersonal = Double.parseDouble(personalData.split("#")[0]);
+        	deviationPersonal = Double.parseDouble(personalData.split("#")[1]);
+        }
 
+        // open the cameraview in the layout
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         mOpenCvCameraView.setCvCameraViewListener(this);
     }
@@ -514,7 +526,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	double match_valuer = match_eye(eyearea_right,templateR, right_pupil, TM_CCOEFF_NORMED, RETURN_EYE_RIGHT); 
 		        	double match_valuem = match_eye(moutharea, templateM, lips, TM_CCOEFF_NORMED, RETURN_MOUTH);
 		        
-		        	Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
+		        	//Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 			        
 
 		        //********************************************************************************************************************************/
@@ -602,8 +614,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 				        }
 				        
 
-				        
-				        // add the Gaussian distrubutian of the most likely pupil
+				        // add the Gaussian distrubutian of the most likely pupil and multiply to increase its weight
 			        	weightR += Particle.weightGauss(distanceR) * 200;
 			        	weightL += Particle.weightGauss(distanceL) * 200;
 			        	weightM += Particle.weightGauss(distanceM) * 200;
@@ -670,6 +681,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // Mouth
 		        estimateM.x = estimateM.x / weightnormM;
 		        estimateM.y = estimateM.y / weightnormM;
+		        
 		        Core.circle(mRgba, estimateR, 5, PUPIL_COLOR, 4);
 		        Core.circle(mRgba, estimateL, 5, PUPIL_COLOR, 4);
 		        Core.circle(mRgba, estimateM, 5, PUPIL_COLOR, 4);
@@ -738,16 +750,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	*/
 		        }
 		        
-		        
-		        
-		        
-		        
-		        
-		        
-		        
-		        
-		        
-		        
+		       
 		        
 	        	//********************************************************************************************************************************/
 	        	//                                                             TRAIN                                                              /
@@ -763,7 +766,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        		// enough training samples collected, determine the mean
 		        		for (int r = 0; r < nSamples; r++)
 		        		{
-		        			average =+ traindata[r];
+		        			average += traindata[r];
 		        		}
 		        		average = average / nSamples;
 		        		
@@ -775,7 +778,20 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		                }
 		                double variance = temp / (nSamples - 1);
 		        		
-		                //Log.i("ratio", "mean: " + average + "variance: " + variance);
+		                Log.i("ratio", "mean: " + average + "variance: " + variance);
+		                
+		                
+		                // Save values in a string so it can be saved in shared preferences
+		                String personalData = average + "#" + variance;
+		                // We need an Editor object to make preference changes.
+		                // All objects are from android.context.Context
+		                SharedPreferences settings = getPreferences(MODE_PRIVATE);
+		                SharedPreferences.Editor editor = settings.edit();
+		                editor.putString("PersonalData", personalData);
+
+		                // Commit the edits!
+		                editor.commit();
+		               
 		                // set training variables back to 0
 		        		traincounter = 0;
 		        		train = false;
@@ -783,7 +799,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	else
 		        	{
 			        	traindata[traincounter] = ratio;
-			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
+			        	Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
 			        	traincounter++;
 		        	}
 		        }
