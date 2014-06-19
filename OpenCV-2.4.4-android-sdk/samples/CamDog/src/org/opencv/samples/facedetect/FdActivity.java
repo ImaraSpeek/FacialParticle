@@ -57,9 +57,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
-    private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 255);
-    private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 255);
+    private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 100);
+    private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 100);
+    private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 100);
     private static final Scalar    LINE_COLOR    	   = new Scalar(255, 120, 0, 0);
     private static final Scalar    LEFT_PIXEL_COLOR    = new Scalar(39, 219, 195, 255);
     private static final Scalar    RIGHT_PIXEL_COLOR   = new Scalar(219, 39, 156, 255);
@@ -108,10 +108,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // Native library for the camera
     private CameraBridgeViewBase   mOpenCvCameraView;
     
-    // for tracking the face
-    CamShifting cs;
-    CamShifting cseyes;
-    
     private static final int TM_SQDIFF 			= 0;
     private static final int TM_SQDIFF_NORMED 	= 1;
     private static final int TM_CCOEFF			= 2;
@@ -134,22 +130,26 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Particle[] particlesL = new Particle[nParticles];
     private Particle[] particlesM = new Particle[nParticles];
     
+    private int templateSamples = 10;
+    
     // variable to save previous face location for motion model
     private Point prevFace = null;
     private double deviation = 10; 
     
+    // boolean to keep track of training
     private boolean train = false;
     
     // a array of size 2 to save the mean and the sigma of the ratios for training
-    private double[] ratios = new double[2];
     private int traincounter = 0;
+    private int veriCounter = 0;
+    
     private int nSamples = 5;
     private double[] traindata = new double[nSamples];
+    private double[] veridata = new double[nSamples];
+    
     private double meanPersonal = 0.0;
     private double deviationPersonal = 0.0;
-
-    
-    
+        
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -300,7 +300,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         	//********************************************************************************************************************************/
 	        
 	        // learn the template for the features
-	        if(learn_frames<5)
+	        if(learn_frames < templateSamples)
 	        {
 	        	templateL = get_template(mCascadeEL,eyearea_left,24);
              	templateR = get_template(mCascadeER,eyearea_right,24);
@@ -310,7 +310,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
              	learn_frames++;
              	// TODO make sure that templates are correct 	
              	
-             	if(learn_frames == 4) {
+             	if(learn_frames == (templateSamples - 1)) {
              		// Initialize particles for right eye
              		for (int i = 0; i<particlesR.length; i++) {
              			
@@ -734,22 +734,34 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        // TODO compare the training dataset with the current observations if there is a dataset available
 		        if (meanPersonal != 0.0)
 		        {
-		        	
+		        	// If not enough data samples are collected, collect more
+		        	if (veriCounter < nSamples)
+		        	{
+		        		
+		        	}
+		        	// calculate mean and verify etc
+		        	else
+		        	{
+		        		
+		        	}
 		        }
 		        else 
 		        {
-	                // Notify user that training is necessary
-	                FdActivity.this.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							// TODO Auto-generated method stub
-							Context context = getApplicationContext();
-		            		CharSequence text = "Training is initiated, keep looking straight at the camera";
-		            		int duration = Toast.LENGTH_LONG;
-		            		Toast toast = Toast.makeText(context, text, duration);
-		            		toast.show();
-						}
-	                });
+		        	if (traincounter == 0)
+		        	{
+		                // Notify user that training is necessary
+		                FdActivity.this.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								// TODO Auto-generated method stub
+								Context context = getApplicationContext();
+			            		CharSequence text = "Training initiated, look straight at the camera";
+			            		int duration = Toast.LENGTH_LONG;
+			            		Toast toast = Toast.makeText(context, text, duration);
+			            		toast.show();
+							}
+		                });
+		        	}
 	                
 	                // initiate training
 	                train = true;
@@ -765,9 +777,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        if (train)
 		        {
 		        	//Log.i("DEBUG", "im in the train loop");
-		        	if (traincounter >= nSamples)
+		        	if (traincounter < nSamples)
 		        	{
-		        		double average = 0.0;
+			        	traindata[traincounter] = ratio;
+			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
+			        	traincounter++;
+		        	}
+		        	else
+		        	{
+			        	double average = 0.0;
 		        		// enough training samples collected, determine the mean
 		        		for (int r = 0; r < nSamples; r++)
 		        		{
@@ -816,12 +834,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		                // set training variables back to 0
 		        		traincounter = 0;
 		        		train = false;
-		        	}
-		        	else
-		        	{
-			        	traindata[traincounter] = ratio;
-			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
-			        	traincounter++;
 		        	}
 		        }
 	        }
