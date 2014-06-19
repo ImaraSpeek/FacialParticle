@@ -732,22 +732,27 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//********************************************************************************************************************************/
 		        
 		        // TODO compare the training dataset with the current observations if there is a dataset available
-		        if (traindata[nSamples - 1] != 0.0)
+		        if (meanPersonal != 0.0)
 		        {
 		        	
 		        }
 		        else 
 		        {
-		        	// I dont think toast works in oncamera frame
-		        	/*
-            		Context context = getApplicationContext();
-            		CharSequence text = "first train!";
-            		int duration = Toast.LENGTH_LONG;
-
-            		Toast toast = Toast.makeText(context, text, duration);
-            		toast.show();
-		        	train = true;
-		        	*/
+	                // Notify user that training is necessary
+	                FdActivity.this.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							Context context = getApplicationContext();
+		            		CharSequence text = "Training is initiated, keep looking straight at the camera";
+		            		int duration = Toast.LENGTH_LONG;
+		            		Toast toast = Toast.makeText(context, text, duration);
+		            		toast.show();
+						}
+	                });
+	                
+	                // initiate training
+	                train = true;
 		        }
 		        
 		       
@@ -768,7 +773,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        		{
 		        			average += traindata[r];
 		        		}
-		        		average = average / nSamples;
+		        		average = average / nSamples;		        		
 		        		
 		        		// determine variance
 		                double temp = 0;
@@ -779,7 +784,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		                double variance = temp / (nSamples - 1);
 		        		
 		                Log.i("ratio", "mean: " + average + "variance: " + variance);
-		                
 		                
 		                // Save values in a string so it can be saved in shared preferences
 		                String personalData = average + "#" + variance;
@@ -792,9 +796,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		                // Commit the edits!
 		                editor.commit();
 		                
+		                // Assign the values globally so they can be processed
+		                meanPersonal = average;
+		                deviationPersonal = deviation;
+		                
 		                // Notify user the training is done
 		                FdActivity.this.runOnUiThread(new Runnable() {
-
 							@Override
 							public void run() {
 								// TODO Auto-generated method stub
@@ -804,12 +811,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			            		Toast toast = Toast.makeText(context, text, duration);
 			            		toast.show();
 							}
-		                	
 		                });
-	            		
-
-	            		
-		               
+		                
 		                // set training variables back to 0
 		        		traincounter = 0;
 		        		train = false;
@@ -817,7 +820,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	else
 		        	{
 			        	traindata[traincounter] = ratio;
-			        	Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
+			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
 			        	traincounter++;
 		        	}
 		        }
