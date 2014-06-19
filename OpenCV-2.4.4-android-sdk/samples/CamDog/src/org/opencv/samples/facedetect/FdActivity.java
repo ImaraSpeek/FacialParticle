@@ -534,25 +534,29 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        	
 			        	// make sure that all weights are assigned actual numbers, as Result matrix does not return numbers for
 			        	// any values outside of the region of interest
+			        
 			        	
 			        	// RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT RIGHT
+			        	double weightR = 0.0;
 			        	if (mResultR != null)
 				        {
-				        	likelihoodR = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
+			        		// check if the particle is within the region, if not set weight to zero
+			        		if (particlesR[i].getLocation().x < eyearea_right.x || particlesR[i].getLocation().x > eyearea_right.x + eyearea_right.width || 
+			        				particlesR[i].getLocation().y < eyearea_right.y || particlesR[i].getLocation().y > eyearea_right.y + eyearea_right.height)
+			        		{
+			        			// leave weight at 0.0;
+			        		}
+			        		else 
+			        		{
+					        	//double[] test = mResultR.get(eyearea_right.y/2, eyearea_right.x/2);
+					        	//Log.i("DEBUG", "test double for value outside result: " + test[0] );
+					        	likelihoodR = mResultR.get((int)(particlesR[i].getLocation().y - eyearea_right.y), (int)(particlesR[i].getLocation().x - eyearea_right.x)); 
+					        	if (likelihoodR != null && likelihoodR[0] > 0.0)
+					        	{
+					        		weightR = likelihoodR[0];
+					        	}
+			        		}
 				        }
-			        	double weightR = 0.0;
-				        if (likelihoodR != null)
-			        	{
-				        	//Log.i("DEBUG", " particle[" + i + "], likelihood = " + likelihood[0]);
-				        	if (likelihoodR[0] <= 0.0)
-				        	{
-				        		weightR = 0.0;
-				        	}
-				        	else 
-				        	{
-				        		weightR = likelihoodR[0];
-				        	}
-			        	}
 				        
 				        // LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT LEFT 
 			        	if (mResultL != null)
