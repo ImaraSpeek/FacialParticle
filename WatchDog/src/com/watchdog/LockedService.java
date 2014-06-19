@@ -44,15 +44,15 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 	private double threshold = 1;
 	
 	// Calibration variables
-	private long timeLastMsrAboveCalibrationThreshold = -1;
+	private long timeLastMsrAboveCalibrationThreshold;
 	private double calibrationThreshold = 0.2; // Acceleration
 	private long calibrationThresholdTime = 3000; // ms
-	private long calibrationStart = -1;
+	private long calibrationStart;
 	private long calibrationTime = 5000; // ms
-	private double maxAccValue = -1;
+	private double maxAccValue;
 	private int calibrationFactor = 4;
-	private long startThresholdPass = -1;
-	private int bumpTime = 500; // ms
+	private long startThresholdPass;
+	private int bumpTime = 300; // ms
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -71,6 +71,12 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 		Log.i(TAG, "LockedService started");
 		
 		appState = ApplicationState.getInstance(getApplicationContext());
+		
+		// Initialize calibration data
+		timeLastMsrAboveCalibrationThreshold = -1;
+		calibrationStart = -1;
+		maxAccValue = -1;
+		startThresholdPass = -1;
 		
 		// Initialize PubNub
 		pubnub = PubNub.getInstance();

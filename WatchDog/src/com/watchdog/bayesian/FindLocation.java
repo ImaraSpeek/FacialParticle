@@ -43,7 +43,7 @@ public class FindLocation {
 		double threshold = 0.95;
 		
 		for (ScanResult r : scanResults) {
-			Log.i("WatchDog", "AP " + r.BSSID + "(" + r.SSID + ")");
+			Log.i("WatchDog", "AP " + it + ": " + r.BSSID + "(" + r.SSID + ")");
 			if (it==max) break;
 			it++;
 			

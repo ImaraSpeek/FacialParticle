@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
 	private Button btnLoc;
 	private Button btnStopServices;
 	private TextView lblDevices;
+	private Button btnStartWatch;
 	
 	// Receivers
 	BroadcastReceiver stateChangedReceiver;
@@ -67,6 +68,15 @@ public class MainActivity extends Activity {
 				
 				Intent watchIntent = new Intent(MainActivity.this, WatchService.class);
 				stopService(watchIntent);
+			}
+		});
+		
+		btnStartWatch = (Button) findViewById(R.id.btnStartWatch);
+		btnStartWatch.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent watchIntent = new Intent(MainActivity.this, WatchService.class);
+				startService(watchIntent);
 			}
 		});
 		

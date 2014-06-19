@@ -163,12 +163,14 @@ public class WatchService extends Service implements PubNubReceiver, BluetoothLi
 		else if (firstPart.equals("STOLEN!")) {
 			String mac = message.split("@")[1];
 			String name = message.split("@")[2];
-			Log.i(TAG, "STOLEN " + mac + " (" + name + ")");
-			
-			Intent i = new Intent(getBaseContext(), StolenActivity.class);
-			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			i.putExtra("name", name + " (" + mac + ")");
-			getApplication().startActivity(i);
+			if (appState.containsLockedDevice(mac) || unlockedDevices.containsKey(mac)) {
+				Log.i(TAG, "STOLEN " + mac + " (" + name + ")");
+				
+				Intent i = new Intent(getBaseContext(), StolenActivity.class);
+				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				i.putExtra("name", name + " (" + mac + ")");
+				getApplication().startActivity(i);
+			}
 		}
 		else if (firstPart.equals("NOTSTOLEN")) {
 			String mac = message.split("@")[1];
