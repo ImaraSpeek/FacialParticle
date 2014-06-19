@@ -842,15 +842,50 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			        		{
 			        			average += traindata[r];
 			        		}
-			        		average = average / trainSamples;		        		
+			        		average = average / trainSamples;	
+			        		
+			        		/*
+			        		int realSamples = 0;
+			        		double newaverage = 0.0;
+			        		// Throw away the outliers
+			        		for (int r = 0; r < trainSamples; r++)
+			        		{
+			        			// if the data sample is an outlier, throw away data
+			        			if (traindata[r] < average - (average/10) || traindata[r] > average + (average / 10))
+			        			{
+			        				traindata[r] = 0.0;
+			        			}
+			        			else
+			        			{
+			        				newaverage += traindata[r];
+			        				realSamples++;
+			        			}
+			        		}
+			        		newaverage = newaverage / realSamples;
+			        		
 			        		
 			        		// determine variance
 			                double temp = 0;
 			                for(int r = 0; r < trainSamples; r++)
 			                {
-			                    temp += (average-traindata[r])*(average-traindata[r]);
+			                	if (traindata[r] != 0.0)
+			                	{
+			                		temp += (newaverage-traindata[r])*(newaverage-traindata[r]);
+			                	}
 			                }
-			                double variance = temp / (trainSamples - 1);
+			                double variance = temp / (realSamples - 1);
+
+			                */
+			        		
+			                double temp = 0;
+			                for(int r = 0; r < trainSamples; r++)
+			                {
+			                	if (traindata[r] != 0.0)
+			                	{
+			                		temp += (average-traindata[r])*(average-traindata[r]);
+			                	}
+			                }
+			                double variance = temp / (nSamples - 1);
 			        		
 			                Log.i("ratio", "training mean: " + average + " variance: " + variance);
 			                
@@ -867,7 +902,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 			                
 			                // Assign the values globally so they can be processed
 			                meanPersonal = average;
-			                deviationPersonal = deviation;
+			                deviationPersonal = variance;
 			                
 			                // Notify user the training is done
 			                FdActivity.this.runOnUiThread(new Runnable() {
