@@ -54,6 +54,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	
 	
 	public static final String PREFS_NAME = "MyTrainedFace";
+	CharSequence hello = "Hi Imara";
+	CharSequence stranger = "Back off man!";
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
@@ -111,6 +113,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     // Native library for the camera
     private CameraBridgeViewBase   mOpenCvCameraView;
     
+    // Template matching return methods
     private static final int TM_SQDIFF 			= 0;
     private static final int TM_SQDIFF_NORMED 	= 1;
     private static final int TM_CCOEFF			= 2;
@@ -118,6 +121,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final int TM_CCORR 			= 4;
     private static final int TM_CCORR_NORMED 	= 5;
     
+    // for setting the result matrices
     private static final int RETURN_EYE_LEFT		= 0;
     private static final int RETURN_EYE_RIGHT		= 1;
     private static final int RETURN_MOUTH			= 2;
@@ -147,7 +151,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private int veriCounter = 0;
     
     private int nSamples = 5;
-    private double[] traindata = new double[nSamples];
+    private int trainSamples = 100;
+    private double[] traindata = new double[trainSamples];
     private double[] veridata = new double[nSamples];
     
     private double meanPersonal = 0.0;
@@ -175,16 +180,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     };
-    
-    // A button listener for all the buttons
-    private class ButtonListener implements View.OnClickListener{
-    	Intent i;
-    	FileOutputStream out;
-    	
-		public void onClick(View v) {
-			
-		}
-    }
     
     
     public FdActivity() {
@@ -244,8 +239,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mGray.release();
         mRgba.release();
     }
-       
-
+    
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
 
         mRgba = inputFrame.rgba();
@@ -253,9 +247,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         
         //Log.i("LOG", "size of frame is: " + mRgba.cols() + " x " + mRgba.rows());
         
+        // Mat of rect to store result faces for native detector
         MatOfRect 	faces = new MatOfRect();
         Rect[] 		facesArray = null;
-        
 
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
@@ -270,8 +264,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     	mNativeDetector.detect(mGray, faces);
     	// take the most important face
         facesArray = faces.toArray();
-        //Log.i("info", "faces to array length " + facesArray.length);
-        // TODO sense if more than 1 face and give an error
+        // only perform functionality when a face is detected
         if (facesArray.length > 0)
         {
         	//********************************************************************************************************************************/
@@ -359,6 +352,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
 	        else
 	        {
+	        	
+	        	
 	        	//********************************************************************************************************************************/
 	        	//                                                          RESAMPLING                                                            /
 	        	//********************************************************************************************************************************/
@@ -530,6 +525,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 		        	//Log.i("MV", "match_valuer: " + match_valuer + " match value l: " + match_valuel + " match mouth: " + match_valuem);
 			        
 
+		        	
 		        //********************************************************************************************************************************/
 		        //                                                          ASSIGN WEIGHTS                                                        /
 		        //********************************************************************************************************************************/    
@@ -643,50 +639,50 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//                                                          ESTIMATE                                                              /
 	        	//********************************************************************************************************************************/
 		        
-		        // Sort the particles to make an estimation from the top particles' average
-		        Arrays.sort(particlesR);
-		        Arrays.sort(particlesL);
-		        Arrays.sort(particlesM);
-		        //Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
-		        
-		        // Make a proper estimation based on the particles
-		        Point estimateR = new Point();
-		        Point estimateL = new Point();
-		        Point estimateM = new Point();
-		        double weightnormR = 0.0;
-		        double weightnormL = 0.0;
-		        double weightnormM = 0.0;
-		        // set the average for the best 100 particles
-		        for (int i = 0; i < nParticles/10; i ++)
-		        {
-		        	// Right
-		        	estimateR.x += (particlesR[i].getLocation().x * particlesR[i].getWeight());
-		        	estimateR.y += (particlesR[i].getLocation().y * particlesR[i].getWeight());
-		        	weightnormR += particlesR[i].getWeight();
-		        	// Left
-		        	estimateL.x += (particlesL[i].getLocation().x * particlesL[i].getWeight());
-		        	estimateL.y += (particlesL[i].getLocation().y * particlesL[i].getWeight());
-		        	weightnormL += particlesL[i].getWeight();
-		        	// Mouth
-		        	estimateM.x += (particlesM[i].getLocation().x * particlesM[i].getWeight());
-		        	estimateM.y += (particlesM[i].getLocation().y * particlesM[i].getWeight());
-		        	weightnormM += particlesM[i].getWeight();
-		        }
-		        // average the position of the estimate
-		        // Right
-		        estimateR.x = estimateR.x / weightnormR;
-		        estimateR.y = estimateR.y / weightnormR;
-		        // Left
-		        estimateL.x = estimateL.x / weightnormL;
-		        estimateL.y = estimateL.y / weightnormL;
-		        // Mouth
-		        estimateM.x = estimateM.x / weightnormM;
-		        estimateM.y = estimateM.y / weightnormM;
-		        
-		        Core.circle(mRgba, estimateR, 5, PUPIL_COLOR, 4);
-		        Core.circle(mRgba, estimateL, 5, PUPIL_COLOR, 4);
-		        Core.circle(mRgba, estimateM, 5, PUPIL_COLOR, 4);
-		        
+			        // Sort the particles to make an estimation from the top particles' average
+			        Arrays.sort(particlesR);
+			        Arrays.sort(particlesL);
+			        Arrays.sort(particlesM);
+			        //Log.i("DEBUG", "particle[0]: " + particlesR[0].getWeight() + " particle[999]: " + particlesR[999].getWeight());
+			        
+			        // Make a proper estimation based on the particles
+			        Point estimateR = new Point();
+			        Point estimateL = new Point();
+			        Point estimateM = new Point();
+			        double weightnormR = 0.0;
+			        double weightnormL = 0.0;
+			        double weightnormM = 0.0;
+			        // set the average for the best 100 particles
+			        for (int i = 0; i < nParticles/10; i ++)
+			        {
+			        	// Right
+			        	estimateR.x += (particlesR[i].getLocation().x * particlesR[i].getWeight());
+			        	estimateR.y += (particlesR[i].getLocation().y * particlesR[i].getWeight());
+			        	weightnormR += particlesR[i].getWeight();
+			        	// Left
+			        	estimateL.x += (particlesL[i].getLocation().x * particlesL[i].getWeight());
+			        	estimateL.y += (particlesL[i].getLocation().y * particlesL[i].getWeight());
+			        	weightnormL += particlesL[i].getWeight();
+			        	// Mouth
+			        	estimateM.x += (particlesM[i].getLocation().x * particlesM[i].getWeight());
+			        	estimateM.y += (particlesM[i].getLocation().y * particlesM[i].getWeight());
+			        	weightnormM += particlesM[i].getWeight();
+			        }
+			        // average the position of the estimate
+			        // Right
+			        estimateR.x = estimateR.x / weightnormR;
+			        estimateR.y = estimateR.y / weightnormR;
+			        // Left
+			        estimateL.x = estimateL.x / weightnormL;
+			        estimateL.y = estimateL.y / weightnormL;
+			        // Mouth
+			        estimateM.x = estimateM.x / weightnormM;
+			        estimateM.y = estimateM.y / weightnormM;
+			        
+			        Core.circle(mRgba, estimateR, 5, PUPIL_COLOR, 4);
+			        Core.circle(mRgba, estimateL, 5, PUPIL_COLOR, 4);
+			        Core.circle(mRgba, estimateM, 5, PUPIL_COLOR, 4);
+			        
 		        
 		        
 
@@ -694,149 +690,203 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 	        	//                                                          MEASUREMENTS                                                          /
 	        	//********************************************************************************************************************************/
 		        
-	        	// Measure distances and ratios
-		        // TODO set these distances based on the estimate values from particle filter
-	        	
-	        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
-	        	
-		        //Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
-		        //Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
-		        //Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
-		        
-		        // determine horizontal and vertical distances
-		        double eyex = Math.abs(estimateL.x - estimateR.x);
-		        double eyey = Math.abs(estimateL.y - estimateR.y);
-		        // determine the x by subtracting half of the width from the farthest x coordinate
-		        middle_pupil.x = estimateL.x - (eyex / 2);
-		        middle_pupil.y = estimateL.y - (eyey / 2);
-		        
-		        Core.line(mRgba, estimateL, estimateR, LINE_COLOR, 2);
-		        
-		        // determine the horizontal and vertical distances from middle of the eyes to the mouth
-		        double mouthx = Math.abs(Math.max(middle_pupil.x, estimateM.x) - Math.min(middle_pupil.x, estimateM.x));
-		        double mouthy = Math.abs(Math.max(middle_pupil.y, estimateM.y) - Math.min(middle_pupil.y, estimateM.y));
-	
-		        Core.line(mRgba, middle_pupil, estimateM, LINE_COLOR, 2);
+		        	// Measure distances and ratios
+			        // TODO set these distances based on the estimate values from particle filter
 		        	
-		        // pythagoras
-		        double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
-		        double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	     
-		        
-		        // actual ratio
-		        double ratio = interoccular / moutheyes;
+		        	//Log.i("distance", "match left: " + match_valuel + "match value right: " + match_valuer);
 		        	
-		        //Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
-		        
+			        //Log.i("distance", "x: " + left_pupil.x + ", y: " + left_pupil.y);
+			        //Log.i("distance", "left x: " + left_pupil.x + " right x: " + right_pupil.x);
+			        //Log.i("distance", "left y: " + left_pupil.y + " right y: " + right_pupil.y);
+			        
+			        // determine horizontal and vertical distances
+			        double eyex = Math.abs(estimateL.x - estimateR.x);
+			        double eyey = Math.abs(estimateL.y - estimateR.y);
+			        // determine the x by subtracting half of the width from the farthest x coordinate
+			        middle_pupil.x = estimateL.x - (eyex / 2);
+			        middle_pupil.y = estimateL.y - (eyey / 2);
+			        
+			        Core.line(mRgba, estimateL, estimateR, LINE_COLOR, 2);
+			        
+			        // determine the horizontal and vertical distances from middle of the eyes to the mouth
+			        double mouthx = Math.abs(Math.max(middle_pupil.x, estimateM.x) - Math.min(middle_pupil.x, estimateM.x));
+			        double mouthy = Math.abs(Math.max(middle_pupil.y, estimateM.y) - Math.min(middle_pupil.y, estimateM.y));
+		
+			        Core.line(mRgba, middle_pupil, estimateM, LINE_COLOR, 2);
+			        	
+			        // pythagoras
+			        double interoccular = Math.sqrt((eyex * eyex) + (eyey * eyey));
+			        double moutheyes = Math.sqrt((mouthx * mouthx) + (mouthy * mouthy));	     
+			        
+			        // actual ratio
+			        double ratio = interoccular / moutheyes;
+			        	
+			        //Log.i("distance", "distance eyes: " + interoccular + " distance eyes to mouth: " + moutheyes + "ratio: " + ratio);
+			        
 
 	        	//********************************************************************************************************************************/
 	        	//                                                             VERIFICATION                                                       /
 	        	//********************************************************************************************************************************/
 		        
-		        // TODO compare the training dataset with the current observations if there is a dataset available
-		        if (meanPersonal != 0.0)
-		        {
-		        	// If not enough data samples are collected, collect more
-		        	if (veriCounter < nSamples)
-		        	{
-		        		
-		        	}
-		        	// calculate mean and verify etc
-		        	else
-		        	{
-		        		
-		        	}
-		        }
-		        else 
-		        {
-		        	if (traincounter == 0)
-		        	{
-		                // Notify user that training is necessary
-		                FdActivity.this.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								// TODO Auto-generated method stub
-								Context context = getApplicationContext();
-			            		CharSequence text = "Training initiated, look straight at the camera";
-			            		int duration = Toast.LENGTH_LONG;
-			            		Toast toast = Toast.makeText(context, text, duration);
-			            		toast.show();
-							}
-		                });
-		        	}
-	                
-	                // initiate training
-	                train = true;
-		        }
-		        
+			        // TODO compare the training dataset with the current observations if there is a dataset available
+			        if (meanPersonal != 0.0)
+			        {
+			        	// If not enough data samples are collected, collect more
+			        	if (veriCounter < nSamples)
+			        	{
+			        		veridata[veriCounter] = ratio;
+			        		veriCounter++;
+			        	}
+			        	// calculate mean and verify etc
+			        	else
+			        	{
+			        		double average = 0.0;
+			        		// enough training samples collected, determine the mean
+			        		for (int r = 0; r < nSamples; r++)
+			        		{
+			        			average += veridata[r];
+			        		}
+			        		average = average / nSamples;		        		
+			        		
+			        		// determine variance
+			                double temp = 0;
+			                for(int r = 0; r < nSamples; r++)
+			                {
+			                    temp += (average-veridata[r])*(average-veridata[r]);
+			                }
+			                double variance = temp / (nSamples - 1);
+			        		
+			                // TODO verify
+			                Log.i("ratio", "training mean: " + meanPersonal + " variance: " + deviationPersonal);
+			                Log.i("ratio", "verification mean: " + average + " variance: " + variance);
+			                
+			                double probability = Particle.newGauss(meanPersonal, average, deviationPersonal);
+			                
+			                Log.i("ratio", "probability: " + probability);
+			                
+			                veriCounter = 0;
+			                
+			                if (probability > 0.05)
+			                {
+				                // Notify user that training is necessary
+				                FdActivity.this.runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										// TODO Auto-generated method stub
+										Context context = getApplicationContext();
+					            		int duration = Toast.LENGTH_LONG;
+					            		Toast toast = Toast.makeText(context, hello, duration);
+					            		toast.show();
+									}
+				                });
+			                }
+			                else
+			                {
+				                // Notify user that training is necessary
+				                FdActivity.this.runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										// TODO Auto-generated method stub
+										Context context = getApplicationContext();
+					            		int duration = Toast.LENGTH_LONG;
+					            		Toast toast = Toast.makeText(context, stranger, duration);
+					            		toast.show();
+									}
+				                });
+			                }
+			        	}
+			        }
+			        else 
+			        {
+			        	if (traincounter == 0)
+			        	{
+			                // Notify user that training is necessary
+			                FdActivity.this.runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									// TODO Auto-generated method stub
+									Context context = getApplicationContext();
+				            		CharSequence text = "Training initiated, look straight at the camera";
+				            		int duration = Toast.LENGTH_LONG;
+				            		Toast toast = Toast.makeText(context, text, duration);
+				            		toast.show();
+								}
+			                });
+			        	}
+		                
+		                // initiate training
+		                train = true;
+			        }
+			        
 		       
 		        
 	        	//********************************************************************************************************************************/
 	        	//                                                             TRAIN                                                              /
 	        	//********************************************************************************************************************************/
 		        
-		        // TODO save the values in a database
-		        if (train)
-		        {
-		        	//Log.i("DEBUG", "im in the train loop");
-		        	if (traincounter < nSamples)
-		        	{
-			        	traindata[traincounter] = ratio;
-			        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
-			        	traincounter++;
-		        	}
-		        	else
-		        	{
-			        	double average = 0.0;
-		        		// enough training samples collected, determine the mean
-		        		for (int r = 0; r < nSamples; r++)
-		        		{
-		        			average += traindata[r];
-		        		}
-		        		average = average / nSamples;		        		
-		        		
-		        		// determine variance
-		                double temp = 0;
-		                for(int r = 0; r < nSamples; r++)
-		                {
-		                    temp += (average-traindata[r])*(average-traindata[r]);
-		                }
-		                double variance = temp / (nSamples - 1);
-		        		
-		                Log.i("ratio", "mean: " + average + "variance: " + variance);
-		                
-		                // Save values in a string so it can be saved in shared preferences
-		                String personalData = average + "#" + variance;
-		                // We need an Editor object to make preference changes.
-		                // All objects are from android.context.Context
-		                SharedPreferences settings = getPreferences(MODE_PRIVATE);
-		                SharedPreferences.Editor editor = settings.edit();
-		                editor.putString("PersonalData", personalData);
-
-		                // Commit the edits!
-		                editor.commit();
-		                
-		                // Assign the values globally so they can be processed
-		                meanPersonal = average;
-		                deviationPersonal = deviation;
-		                
-		                // Notify user the training is done
-		                FdActivity.this.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								// TODO Auto-generated method stub
-								Context context = getApplicationContext();
-			            		CharSequence text = "Training is complete!";
-			            		int duration = Toast.LENGTH_LONG;
-			            		Toast toast = Toast.makeText(context, text, duration);
-			            		toast.show();
-							}
-		                });
-		                
-		                // set training variables back to 0
-		        		traincounter = 0;
-		        		train = false;
-		        	}
-		        }
+			        // TODO save the values in a database
+			        if (train)
+			        {
+			        	//Log.i("DEBUG", "im in the train loop");
+			        	if (traincounter < trainSamples)
+			        	{
+				        	traindata[traincounter] = ratio;
+				        	//Log.i("ratio", "traindata ratio[" + traincounter + "]: " + ratio);
+				        	traincounter++;
+			        	}
+			        	else
+			        	{
+				        	double average = 0.0;
+			        		// enough training samples collected, determine the mean
+			        		for (int r = 0; r < trainSamples; r++)
+			        		{
+			        			average += traindata[r];
+			        		}
+			        		average = average / trainSamples;		        		
+			        		
+			        		// determine variance
+			                double temp = 0;
+			                for(int r = 0; r < trainSamples; r++)
+			                {
+			                    temp += (average-traindata[r])*(average-traindata[r]);
+			                }
+			                double variance = temp / (trainSamples - 1);
+			        		
+			                Log.i("ratio", "training mean: " + average + " variance: " + variance);
+			                
+			                // Save values in a string so it can be saved in shared preferences
+			                String personalData = average + "#" + variance;
+			                // We need an Editor object to make preference changes.
+			                // All objects are from android.context.Context
+			                SharedPreferences settings = getPreferences(MODE_PRIVATE);
+			                SharedPreferences.Editor editor = settings.edit();
+			                editor.putString("PersonalData", personalData);
+	
+			                // Commit the edits!
+			                editor.commit();
+			                
+			                // Assign the values globally so they can be processed
+			                meanPersonal = average;
+			                deviationPersonal = deviation;
+			                
+			                // Notify user the training is done
+			                FdActivity.this.runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									// TODO Auto-generated method stub
+									Context context = getApplicationContext();
+				            		CharSequence text = "Training is complete!";
+				            		int duration = Toast.LENGTH_LONG;
+				            		Toast toast = Toast.makeText(context, text, duration);
+				            		toast.show();
+								}
+			                });
+			                
+			                // set training variables back to 0
+			        		traincounter = 0;
+			        		train = false;
+			        	}
+			        }
 	        }
 	        
 	        // save the previous face center point
