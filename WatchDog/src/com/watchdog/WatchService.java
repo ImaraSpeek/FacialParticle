@@ -13,6 +13,7 @@ import com.watchdog.pubnub.PubNub;
 import com.watchdog.pubnub.PubNub.PubNubReceiver;
 
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +28,7 @@ import android.util.Log;
 public class WatchService extends Service implements PubNubReceiver, BluetoothListener {
 	
 	// LOG TAG
-	private final String TAG = "LockedService";
+	private final String TAG = "WatchService";
 	
 	// Application state
 	private ApplicationState appState;
@@ -101,7 +102,11 @@ public class WatchService extends Service implements PubNubReceiver, BluetoothLi
 						pubnub.sendMessage("STOLEN!@" + e.getKey() + "@" + e.getValue().name);
 						d.stolen = true;
 						Log.i(TAG, "STOLEN " + e.getKey() + " (" + e.getValue().name + ")");
-						// TODO: STOLEN
+						
+						Intent i = new Intent(getBaseContext(), StolenActivity.class);
+						i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						i.putExtra("name", e.getValue().name + " (" + e.getKey() + ")");
+						getApplication().startActivity(i);
 					}
 				}
 				
@@ -130,10 +135,8 @@ public class WatchService extends Service implements PubNubReceiver, BluetoothLi
 
 	@Override
 	public void onReceiveMessage(String message) {
-		Log.i(TAG, "onReceive");
 		String firstPart = message.split("@")[0];
 		if (firstPart.equals("LOCKED!")) {
-			Log.i(TAG, "LOCKED!");
 			String mac = message.split("@")[1];
 			if (unlockedDevices.containsKey(mac)) {
 				String name = message.split("@")[2];
@@ -151,21 +154,37 @@ public class WatchService extends Service implements PubNubReceiver, BluetoothLi
 		}
 		else if (firstPart.equals("STOLEN?")) {
 			String mac = message.split("@")[1];
-			if (!appState.getLockedDeviceStolen(mac)) {
-				pubnub.sendMessage("NOTSTOLEN@" + mac);
+			if (appState.containsLockedDevice(mac)) {
+				if (!appState.getLockedDeviceStolen(mac)) {
+					pubnub.sendMessage("NOTSTOLEN@" + mac);
+				}
 			}
 		}
 		else if (firstPart.equals("STOLEN!")) {
-			// TODO: STOLEN!!
 			String mac = message.split("@")[1];
 			String name = message.split("@")[2];
 			Log.i(TAG, "STOLEN " + mac + " (" + name + ")");
+			
+			Intent i = new Intent(getBaseContext(), StolenActivity.class);
+			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			i.putExtra("name", name + " (" + mac + ")");
+			getApplication().startActivity(i);
 		}
-		else if (firstPart.equals("NO!")) {
+		else if (firstPart.equals("NOTSTOLEN")) {
 			String mac = message.split("@")[1];
-			appState.setLockedDeviceMaybeStolen(mac, false);
-			unlockedDevices.put(mac, appState.getLockedDeviceLastSeen(mac));
-			appState.removeLockedDevice(mac);
+			if (appState.containsLockedDevice(mac)) {
+				appState.setLockedDeviceMaybeStolen(mac, false);
+				unlockedDevices.put(mac, appState.getLockedDeviceLastSeen(mac));
+				appState.removeLockedDevice(mac);
+			}
+		}
+		else if (firstPart.equals("UNLOCK")) {
+			String mac = message.split("@")[1];
+			if (appState.containsLockedDevice(mac)) {
+				long lastSeen = appState.getLockedDeviceLastSeen(mac);
+				appState.removeLockedDevice(mac);
+				unlockedDevices.put(mac, lastSeen);
+			}
 		}
 	}
 

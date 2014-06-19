@@ -158,11 +158,6 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 						Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
 						unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						getApplication().startActivity(unlockIntent);
-						// Release listener, wakelock and stop service
-						sensorManager.unregisterListener(this);
-						wakeLock.release();
-						Log.i(TAG, "Stopping LockedService");
-						stopSelf();
 					}
 				}
 				else if (startThresholdPass > 0) {
@@ -215,7 +210,7 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 			String mac = message.split("@")[1];
 			if (mac.equals(adapter.getAddress())) {
-				pubnub.sendMessage("NO!@" + mac + "@" + adapter.getName());
+				pubnub.sendMessage("NOTSTOLEN@" + mac + "@" + adapter.getName());
 			}
 		}
 	}

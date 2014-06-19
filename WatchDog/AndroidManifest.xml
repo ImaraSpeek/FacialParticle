@@ -36,6 +36,9 @@
         <activity android:label="@string/app_name"
             android:name=".LocalizationActivity">
         </activity>
+        <activity android:label="@string/app_name"
+            android:name=".StolenActivity">
+        </activity>
         
         <service android:enabled="true"
             android:name=".LockedService"
