@@ -57,6 +57,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final String	   TagD				   = "OCVSample::Debugging";
+    
+    // colors
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 100);
     private static final Scalar    EYES_RECT_COLOR     = new Scalar(0, 0, 255, 100);
     private static final Scalar    MOUTH_RECT_COLOR    = new Scalar(255, 0, 180, 100);
@@ -64,25 +66,30 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    LEFT_PIXEL_COLOR    = new Scalar(39, 219, 195, 255);
     private static final Scalar    RIGHT_PIXEL_COLOR   = new Scalar(219, 39, 156, 255);
     private static final Scalar    MOUTH_PIXEL_COLOR   = new Scalar(219, 90, 39, 255);
-    
     private static final Scalar    PUPIL_COLOR		   = new Scalar(255,255,255,255);
     
+    // Detector names
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
 
+    // menu items
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
     private MenuItem			   mItemTrain;
 
+    // Mat for input frames
     private Mat                    mRgba;
     private Mat                    mGray;
     
+    // probability distribution mats for areas
     private Mat                    mResult;
     private Mat					   mResultL;
     private Mat					   mResultR;
     private Mat					   mResultM;
+    
+    // mats for created templates after initial detections
     private Mat					   templateR;
     private Mat					   templateL;
     private Mat					   templateM;
@@ -97,10 +104,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private CascadeClassifier	   mCascadeER;
     private CascadeClassifier	   mCascadeEL;
     private CascadeClassifier	   mCascadeM;
-    
-    private int                    mDetectorType       = NATIVE_DETECTOR;
-    private String[]               mDetectorName;
-    private static String		   current_name 		= "Imara";
 
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
@@ -185,8 +188,6 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     
     
     public FdActivity() {
-        mDetectorName = new String[2];
-        mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
