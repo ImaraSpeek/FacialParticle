@@ -35,7 +35,6 @@ public class DetectionBasedTracker
     	nativeTrack(mNativeObj, faces.getNativeObjAddr());
     }
     */
-    
 
     public void release() {
         nativeDestroyObject(mNativeObj);
