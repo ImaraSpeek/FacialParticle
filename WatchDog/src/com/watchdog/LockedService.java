@@ -1,6 +1,11 @@
 package com.watchdog;
 
+import com.watchdog.ApplicationState.ConnectedDevice;
+import com.watchdog.pubnub.PubNub;
+import com.watchdog.pubnub.PubNub.PubNubReceiver;
+
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -12,7 +17,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
 
-public class LockedService extends Service implements SensorEventListener {
+public class LockedService extends Service implements SensorEventListener, PubNubReceiver {
 	
 	// Application state
 	private ApplicationState appState;
@@ -24,6 +29,8 @@ public class LockedService extends Service implements SensorEventListener {
 	private Thread t;
 	// Wakelock
 	private WakeLock wakeLock;
+	// PubNub
+	private PubNub pubnub;
 	
 	// Sensor variables
 	private SensorManager sensorManager;
@@ -37,13 +44,15 @@ public class LockedService extends Service implements SensorEventListener {
 	private double threshold = 1;
 	
 	// Calibration variables
-	private long timeLastMsrAboveCalibrationThreshold = -1;
+	private long timeLastMsrAboveCalibrationThreshold;
 	private double calibrationThreshold = 0.2; // Acceleration
 	private long calibrationThresholdTime = 3000; // ms
-	private long calibrationStart = -1;
+	private long calibrationStart;
 	private long calibrationTime = 5000; // ms
-	private double maxAccValue = -1;
+	private double maxAccValue;
 	private int calibrationFactor = 4;
+	private long startThresholdPass;
+	private int bumpTime = 300; // ms
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -63,6 +72,16 @@ public class LockedService extends Service implements SensorEventListener {
 		
 		appState = ApplicationState.getInstance(getApplicationContext());
 		
+		// Initialize calibration data
+		timeLastMsrAboveCalibrationThreshold = -1;
+		calibrationStart = -1;
+		maxAccValue = -1;
+		startThresholdPass = -1;
+		
+		// Initialize PubNub
+		pubnub = PubNub.getInstance();
+		pubnub.addReceiver(this);
+		
 		// Initialize wakelock
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WatchDogWakeLock");
@@ -72,6 +91,12 @@ public class LockedService extends Service implements SensorEventListener {
 		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		
+		// Request discoverability
+		Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+		discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 0);
+		discoverableIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		getApplication().startActivity(discoverableIntent);
 		
 		Log.i(TAG, "Going into LOCKING state");
 		appState.setState(ApplicationState.LOCK_STATE_LOCKING);
@@ -106,7 +131,7 @@ public class LockedService extends Service implements SensorEventListener {
 				}
 				if (timeLastMsrAboveCalibrationThreshold > 0 
 						&& (System.currentTimeMillis() - timeLastMsrAboveCalibrationThreshold) > calibrationThresholdTime) {
-					// Acceleration has not been above "calibrtionThreshold" for "calibrationThresholdTime" ms, so go to calibration
+					// Acceleration has not been above "calibrationThreshold" for "calibrationThresholdTime" ms, so go to calibration
 					Log.i(TAG, "Going into CALIBRATING state");
 					appState.setState(ApplicationState.LOCK_STATE_CALIBRATING);
 				}
@@ -122,28 +147,50 @@ public class LockedService extends Service implements SensorEventListener {
 					// Calibration phase ended, set threshold
 					threshold = maxAccValue*calibrationFactor;
 					Log.i(TAG, "Going into LOCKED state with threshold " + threshold + " from maxAccValue " + maxAccValue);
+					beginLocked();
 					appState.setState(ApplicationState.LOCK_STATE_LOCKED);
 				}
 			}
 			if (appState.getState() == ApplicationState.LOCK_STATE_LOCKED) {
 				if (acc > threshold) {
-					Log.i(TAG, "Threshold passed, strting unlock activity");
-					// Threshold passed, start unlock activity
-					Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
-					unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					getApplication().startActivity(unlockIntent);
-					// Release listener, wakelock and stop service
-					sensorManager.unregisterListener(this);
-					wakeLock.release();
-					Log.i(TAG, "Stopping LockedService");
-					stopSelf();
+					// Phone moved
+					if (startThresholdPass < 0) {
+						// Just passed threshold, save the time
+						startThresholdPass = System.currentTimeMillis();
+					}
+					else if ((System.currentTimeMillis() - startThresholdPass) > bumpTime) {
+						// Movement has been longer than bumpTime, start unlock activity
+						Log.i(TAG, "Threshold passed, starting unlock activity");
+						Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
+						unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						getApplication().startActivity(unlockIntent);
+					}
+				}
+				else if (startThresholdPass > 0) {
+					// No movement, reset startThresholdPass
+					startThresholdPass = -1;
 				}
 			}
 		}
 	}
+	
+	public void beginLocked() {
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		pubnub.sendMessage("LOCKED!@" + adapter.getAddress() + "@" + adapter.getName());
+	}
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+	
+	@Override
+	public void onDestroy() {
+		try {
+            wakeLock.release();
+            pubnub.unsubscribe();
+        } catch (Throwable th) { }
+		Log.i(TAG, "LockedService stopped");
+		super.onDestroy();
+	}
 	
 	@Override
 	public void onCreate() {
@@ -154,5 +201,25 @@ public class LockedService extends Service implements SensorEventListener {
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+
+	@Override
+	public void onReceiveMessage(String message) {
+		String firstPart = message.split("@")[0];
+		if (firstPart.equals("LOCKED?")) {
+			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+			String mac = message.split("@")[1];
+			if (mac.equals(adapter.getAddress())) {
+				pubnub.sendMessage("LOCKED!@" + mac + "@" + adapter.getName());
+			}
+		}
+		else if (firstPart.equals("STOLEN?")) {
+			BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+			String mac = message.split("@")[1];
+			if (mac.equals(adapter.getAddress())) {
+				pubnub.sendMessage("NOTSTOLEN@" + mac + "@" + adapter.getName());
+			}
+		}
+	}
+
 
 }

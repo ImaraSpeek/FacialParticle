@@ -1,5 +1,8 @@
 package com.watchdog;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
@@ -23,6 +26,65 @@ public class ApplicationState {
 		return instance;
 	}
 	
+	/**
+	 * LOCKED DEVICES
+	 */
+	private Map<String, ConnectedDevice> lockedDevices = new HashMap<String, ConnectedDevice>();
+	
+	public static final String BROADCAST_LOCKED_DEVICES_CHANGED = "com.watchdog.broadcast.LOCKED_DEVICES_CHANGED";
+	
+	public void putLockedDevice(String mac, ConnectedDevice d) {
+		lockedDevices.put(mac, d);
+		Intent stateChangedIntent = new Intent(BROADCAST_LOCKED_DEVICES_CHANGED);
+	    broadcaster.sendBroadcast(stateChangedIntent);
+	}
+	
+	public void removeLockedDevice(String mac) {
+		lockedDevices.remove(mac);
+		Intent stateChangedIntent = new Intent(BROADCAST_LOCKED_DEVICES_CHANGED);
+	    broadcaster.sendBroadcast(stateChangedIntent);
+	}
+	
+	public boolean containsLockedDevice(String mac) {
+		return lockedDevices.containsKey(mac);
+	}
+	
+	public Map<String, ConnectedDevice> getLockedDevices() {
+		return lockedDevices;
+	}
+	
+	public String getLockedDeviceName(String mac) {
+		return lockedDevices.get(mac).name;
+	}
+	
+	public boolean getLockedDeviceStolen(String mac) {
+		return lockedDevices.get(mac).maybeStolen || lockedDevices.get(mac).stolen;
+	}
+	
+	public void setLockedDeviceMaybeStolen(String mac, boolean maybeStolen) {
+		lockedDevices.get(mac).maybeStolen = maybeStolen;
+	}
+	
+	public long getLockedDeviceLastSeen(String mac) {
+		return lockedDevices.get(mac).lastSeen;
+	}
+	
+	public void setLockedDeviceLastSeen(String mac, long time) {
+		lockedDevices.get(mac).lastSeen = time;
+		Intent stateChangedIntent = new Intent(BROADCAST_LOCKED_DEVICES_CHANGED);
+	    broadcaster.sendBroadcast(stateChangedIntent);
+	}
+	
+	public static class ConnectedDevice {
+		public String name;
+		public long lastSeen;
+		public boolean maybeStolen = false;
+		public boolean stolen = false;
+		public ConnectedDevice(String name, long lastSeen) {
+			this.name = name;
+			this.lastSeen = lastSeen;
+		}
+	}
 	
 	/**
 	 * LOCK STATE

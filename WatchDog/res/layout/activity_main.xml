@@ -10,11 +10,35 @@
         android:layout_height="wrap_content"
         android:text="Lock" />
 
+    <Button
+        android:id="@+id/btnLoc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Localization" />
+
+    <Button
+        android:id="@+id/btnStopServices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop all services" />
+
+    <Button
+        android:id="@+id/btnStartWatch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start watch service" />
+
     <TextView
         android:id="@+id/lblState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
         android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/lblLockedDevices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Locked devices:" />
 
 </LinearLayout>
