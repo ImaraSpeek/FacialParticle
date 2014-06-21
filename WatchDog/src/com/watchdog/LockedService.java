@@ -164,6 +164,7 @@ public class LockedService extends Service implements SensorEventListener, PubNu
 						Intent unlockIntent = new Intent(getBaseContext(), UnlockActivity.class);
 						unlockIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						getApplication().startActivity(unlockIntent);
+						stopSelf();
 					}
 				}
 				else if (startThresholdPass > 0) {
