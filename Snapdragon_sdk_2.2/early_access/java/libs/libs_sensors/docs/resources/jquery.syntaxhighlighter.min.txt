@@ -1,5 +1,0 @@
-FILE DELETED
-
-Microsoft Forefront Protection for Exchange Server removed a file since it was found to match a filter.
-File name: "winmail.dat->docs.zip->jquery.syntaxhighlighter.min.js"
-Filter name: "FILE FILTER= File Extension Blocks: *.JS"
